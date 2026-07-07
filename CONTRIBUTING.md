@@ -4,9 +4,17 @@ Thank you for contributing to HyperFleet API Codegen!
 
 ## Development Workflow
 
-### Before Pushing Code
+### Before Committing Code
 
-All code must pass the following checks before pushing:
+**Always run before committing:**
+
+```bash
+make all
+```
+
+This runs linting and tests with race detection. All checks must pass before pushing.
+
+The full pre-push verification suite:
 
 ```bash
 make verify
@@ -17,14 +25,16 @@ This runs:
 - `go vet` - Static analysis
 - Unit tests with race detection
 
-You can also run these individually:
+You can also run checks individually:
 
 ```bash
 make fmt          # Format code
 make vet          # Run static analysis
 make test         # Run unit tests
-make lint         # Run golangci-lint (requires golangci-lint installed)
+make lint         # Run golangci-lint (required before commit)
 ```
+
+**Note**: `make lint` is required and will catch issues like unchecked errors that may not be caught by `go vet`.
 
 ### Code Generation
 

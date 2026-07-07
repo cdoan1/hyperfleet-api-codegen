@@ -86,7 +86,13 @@ Expected structure (not yet implemented):
   - [openshift/api](https://github.com/openshift/api) - Feature gate patterns and codegen tooling reference
   - [kube-openapi](https://github.com/kubernetes/kube-openapi) - OpenAPI schema generation with marker support
 
-## Development Workflow (Future)
+## Development Workflow
+
+**Before every commit, run:**
+```bash
+make all
+```
+This ensures linting and tests pass. CI will reject commits that don't pass `make all`.
 
 When implemented, the typical workflow will be:
 

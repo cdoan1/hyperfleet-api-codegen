@@ -10,7 +10,7 @@ import (
 
 func TestGenerate(t *testing.T) {
 	tmpFile := "/tmp/openapi-test.json"
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	gen := NewGenerator([]string{"./test"}, tmpFile)
 	gen.Title = "Test API"
