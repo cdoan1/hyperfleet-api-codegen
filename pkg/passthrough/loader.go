@@ -14,6 +14,7 @@ func (g *Generator) LoadSourceFiles(sourceDir string) error {
 	fset := token.NewFileSet()
 
 	// Parse all Go files in the directory
+	//nolint:staticcheck // ParseDir is sufficient for our use case of parsing single directories
 	pkgs, err := parser.ParseDir(fset, sourceDir, func(fi os.FileInfo) bool {
 		// Skip test files and generated files
 		name := fi.Name()
