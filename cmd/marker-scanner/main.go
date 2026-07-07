@@ -46,13 +46,6 @@ func main() {
 
 	log.Printf("Found %d fields with markers", len(scanner.Registry))
 
-	// Show table if verbose
-	if verbose {
-		fmt.Println()
-		printRegistryTable(scanner.Registry)
-		fmt.Println()
-	}
-
 	// Validate if requested
 	if validate {
 		if err := scanner.Registry.Validate(); err != nil {
@@ -68,6 +61,15 @@ func main() {
 	}
 
 	fmt.Printf("Successfully generated field registry at %s\n", outputFile)
+
+	// Show field registry table if verbose
+	if verbose {
+		fmt.Println()
+		fmt.Println("Field Registry Summary:")
+		fmt.Println()
+		printRegistryTable(scanner.Registry)
+		printRegistryStats(scanner.Registry)
+	}
 }
 
 // printRegistryTable displays the field registry as a formatted table
@@ -107,4 +109,38 @@ func printRegistryTable(registry markers.FieldRegistry) {
 	}
 
 	_ = w.Flush()
+}
+
+// printRegistryStats displays summary statistics about the registry
+func printRegistryStats(registry markers.FieldRegistry) {
+	var (
+		mutable    int
+		immutable  int
+		serviceSet int
+		hidden     int
+		gated      int
+	)
+
+	for _, meta := range registry {
+		switch meta.WriteMode {
+		case markers.Mutable:
+			mutable++
+		case markers.Immutable:
+			immutable++
+		case markers.ServiceSet:
+			serviceSet++
+		}
+		if meta.Hidden {
+			hidden++
+		}
+		if meta.FeatureGate != "" {
+			gated++
+		}
+	}
+
+	fmt.Println()
+	fmt.Printf("Summary: %d total fields\n", len(registry))
+	fmt.Printf("  Write Modes: %d mutable, %d immutable, %d service-set\n", mutable, immutable, serviceSet)
+	fmt.Printf("  Visibility:  %d visible, %d hidden\n", len(registry)-hidden, hidden)
+	fmt.Printf("  Gating:      %d gated, %d ungated\n", gated, len(registry)-gated)
 }
