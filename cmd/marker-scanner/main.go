@@ -46,6 +46,16 @@ func main() {
 
 	log.Printf("Found %d fields with markers", len(scanner.Registry))
 
+	// Show scanned fields if verbose
+	if verbose {
+		fmt.Println()
+		fmt.Println("=== Scanned Fields ===")
+		fmt.Println()
+		printRegistryTable(scanner.Registry)
+		printRegistryStats(scanner.Registry)
+		fmt.Println()
+	}
+
 	// Validate if requested
 	if validate {
 		if err := scanner.Registry.Validate(); err != nil {
@@ -62,11 +72,15 @@ func main() {
 
 	fmt.Printf("Successfully generated field registry at %s\n", outputFile)
 
-	// Show field registry table if verbose
+	// Show what was generated if verbose
 	if verbose {
 		fmt.Println()
-		fmt.Println("Field Registry Summary:")
+		fmt.Println("=== Generated Registry Contents ===")
+		fmt.Printf("File: %s\n", outputFile)
+		fmt.Printf("Package: registry\n")
+		fmt.Printf("Exported: FieldRegistry map[string]FieldMeta\n")
 		fmt.Println()
+		fmt.Println("The generated file contains:")
 		printRegistryTable(scanner.Registry)
 		printRegistryStats(scanner.Registry)
 	}
