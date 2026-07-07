@@ -40,6 +40,7 @@ func (s *MarkerScanner) Scan() error {
 func (s *MarkerScanner) scanDir(dir string) error {
 	fset := token.NewFileSet()
 
+	//nolint:staticcheck // ParseDir is sufficient for our use case of scanning single directories
 	pkgs, err := parser.ParseDir(fset, dir, func(fi os.FileInfo) bool {
 		// Skip test files and generated files
 		name := fi.Name()
