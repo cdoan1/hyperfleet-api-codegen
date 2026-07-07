@@ -7,32 +7,38 @@ import (
 )
 
 func TestLoadHyperShiftTypes(t *testing.T) {
+	// Point to cloned HyperShift repo
+	sourceDir := "/Users/cdoan/workspace/src/github.com/openshift/hypershift/api/hypershift/v1beta1"
+
 	gen := NewGenerator(
-		"github.com/openshift/hypershift/api/hypershift/v1beta1",
+		sourceDir,
 		[]string{"HostedClusterSpec"},
 		make(markers.FieldRegistry),
 	)
 
-	if err := gen.LoadSourcePackage(); err != nil {
-		t.Fatalf("Failed to load package: %v", err)
+	if err := gen.LoadSourceFiles(sourceDir); err != nil {
+		t.Fatalf("Failed to load source files: %v", err)
 	}
 
-	if gen.pkg == nil {
-		t.Fatal("Package was not loaded")
+	if len(gen.parsedFiles) == 0 {
+		t.Fatal("No files were loaded")
 	}
 
-	t.Logf("Loaded package: %s", gen.pkg.Path())
+	t.Logf("Loaded %d files from %s", len(gen.parsedFiles), sourceDir)
 }
 
 func TestGenerateTypeDef(t *testing.T) {
+	// Point to cloned HyperShift repo
+	sourceDir := "/Users/cdoan/workspace/src/github.com/openshift/hypershift/api/hypershift/v1beta1"
+
 	gen := NewGenerator(
-		"github.com/openshift/hypershift/api/hypershift/v1beta1",
+		sourceDir,
 		[]string{"HostedClusterSpec"},
 		make(markers.FieldRegistry),
 	)
 
-	if err := gen.LoadSourcePackage(); err != nil {
-		t.Fatalf("Failed to load package: %v", err)
+	if err := gen.LoadSourceFiles(sourceDir); err != nil {
+		t.Fatalf("Failed to load source files: %v", err)
 	}
 
 	typeDef, err := gen.GenerateTypeDef("HostedClusterSpec")

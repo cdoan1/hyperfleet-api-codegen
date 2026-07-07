@@ -1,17 +1,17 @@
 package passthrough
 
 import (
-	"go/types"
+	"go/ast"
 
 	"github.com/openshift-online/hyperfleet-api-codegen/pkg/markers"
 )
 
 // Generator generates passthrough types from upstream types
 type Generator struct {
-	// SourcePackage is the import path of the source package (e.g., "github.com/openshift/hypershift/api/hypershift/v1beta1")
-	SourcePackage string
+	// SourceDir is the directory containing source Go files
+	SourceDir string
 
-	// SourceTypes are the type names to generate passthroughs for (e.g., ["HostedCluster", "NodePool"])
+	// SourceTypes are the type names to generate passthroughs for (e.g., ["HostedClusterSpec", "NodePoolSpec"])
 	SourceTypes []string
 
 	// OutputPackage is the package name for generated code
@@ -20,11 +20,8 @@ type Generator struct {
 	// Registry contains existing field markers to preserve
 	Registry markers.FieldRegistry
 
-	// typeInfo holds type information from the source package
-	typeInfo *types.Info
-
-	// pkg is the loaded source package
-	pkg *types.Package
+	// parsedFiles holds parsed AST of source files
+	parsedFiles map[string]*ast.File
 }
 
 // TypeDef represents a generated passthrough type definition
@@ -64,11 +61,12 @@ type FieldDef struct {
 }
 
 // NewGenerator creates a new passthrough generator
-func NewGenerator(sourcePackage string, sourceTypes []string, registry markers.FieldRegistry) *Generator {
+func NewGenerator(sourceDir string, sourceTypes []string, registry markers.FieldRegistry) *Generator {
 	return &Generator{
-		SourcePackage: sourcePackage,
+		SourceDir:     sourceDir,
 		SourceTypes:   sourceTypes,
 		OutputPackage: "v1alpha1",
 		Registry:      registry,
+		parsedFiles:   make(map[string]*ast.File),
 	}
 }

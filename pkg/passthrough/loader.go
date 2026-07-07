@@ -2,51 +2,67 @@ package passthrough
 
 import (
 	"fmt"
-	"go/types"
-
-	"golang.org/x/tools/go/packages"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"os"
+	"strings"
 )
 
-// LoadSourcePackage loads type information from the source package
-func (g *Generator) LoadSourcePackage() error {
-	cfg := &packages.Config{
-		Mode: packages.NeedTypes | packages.NeedTypesInfo | packages.NeedSyntax | packages.NeedName,
-	}
+// LoadSourceFiles loads and parses Go source files from a directory
+func (g *Generator) LoadSourceFiles(sourceDir string) error {
+	fset := token.NewFileSet()
 
-	pkgs, err := packages.Load(cfg, g.SourcePackage)
+	// Parse all Go files in the directory
+	pkgs, err := parser.ParseDir(fset, sourceDir, func(fi os.FileInfo) bool {
+		// Skip test files and generated files
+		name := fi.Name()
+		return !strings.HasSuffix(name, "_test.go") &&
+			!strings.HasPrefix(name, "zz_generated")
+	}, parser.ParseComments)
+
 	if err != nil {
-		return fmt.Errorf("loading package %s: %w", g.SourcePackage, err)
+		return fmt.Errorf("parsing directory %s: %w", sourceDir, err)
 	}
 
 	if len(pkgs) == 0 {
-		return fmt.Errorf("no packages found for %s", g.SourcePackage)
+		return fmt.Errorf("no packages found in %s", sourceDir)
 	}
 
-	if len(pkgs[0].Errors) > 0 {
-		return fmt.Errorf("errors loading package: %v", pkgs[0].Errors)
+	// Store parsed files
+	g.parsedFiles = make(map[string]*ast.File)
+	for _, pkg := range pkgs {
+		for filename, file := range pkg.Files {
+			g.parsedFiles[filename] = file
+		}
 	}
-
-	g.pkg = pkgs[0].Types
-	g.typeInfo = pkgs[0].TypesInfo
 
 	return nil
 }
 
 // GenerateTypeDef creates a passthrough type definition for a source type
 func (g *Generator) GenerateTypeDef(typeName string) (*TypeDef, error) {
-	// Find the type in the package
-	obj := g.pkg.Scope().Lookup(typeName)
-	if obj == nil {
-		return nil, fmt.Errorf("type %s not found in package %s", typeName, g.SourcePackage)
+	// Find the type definition across all parsed files
+	var typeSpec *ast.TypeSpec
+	for _, file := range g.parsedFiles {
+		ast.Inspect(file, func(n ast.Node) bool {
+			if ts, ok := n.(*ast.TypeSpec); ok && ts.Name.Name == typeName {
+				typeSpec = ts
+				return false
+			}
+			return true
+		})
+		if typeSpec != nil {
+			break
+		}
 	}
 
-	// Get the underlying struct type
-	named, ok := obj.Type().(*types.Named)
-	if !ok {
-		return nil, fmt.Errorf("type %s is not a named type", typeName)
+	if typeSpec == nil {
+		return nil, fmt.Errorf("type %s not found in parsed files", typeName)
 	}
 
-	structType, ok := named.Underlying().(*types.Struct)
+	// Ensure it's a struct type
+	structType, ok := typeSpec.Type.(*ast.StructType)
 	if !ok {
 		return nil, fmt.Errorf("type %s is not a struct", typeName)
 	}
@@ -54,45 +70,73 @@ func (g *Generator) GenerateTypeDef(typeName string) (*TypeDef, error) {
 	typeDef := &TypeDef{
 		Name:       typeName + "Passthrough",
 		SourceName: typeName,
-		Doc:        fmt.Sprintf("%s mirrors %s from %s", typeName+"Passthrough", typeName, g.SourcePackage),
+		Doc:        fmt.Sprintf("%s mirrors %s from upstream", typeName+"Passthrough", typeName),
 		Fields:     make([]FieldDef, 0),
 	}
 
 	// Process each field
-	for i := 0; i < structType.NumFields(); i++ {
-		field := structType.Field(i)
-		tag := structType.Tag(i)
-
-		// Skip unexported fields
-		if !field.Exported() {
+	for _, field := range structType.Fields.List {
+		// Skip fields without names (embedded types)
+		if len(field.Names) == 0 {
 			continue
 		}
 
-		fieldDef := g.createFieldDef(field, tag)
-		typeDef.Fields = append(typeDef.Fields, fieldDef)
+		for _, name := range field.Names {
+			// Skip unexported fields
+			if !name.IsExported() {
+				continue
+			}
+
+			fieldDef := g.createFieldDef(name.Name, field)
+			typeDef.Fields = append(typeDef.Fields, fieldDef)
+		}
 	}
 
 	return typeDef, nil
 }
 
 // createFieldDef creates a field definition with appropriate markers
-func (g *Generator) createFieldDef(field *types.Var, tag string) FieldDef {
+func (g *Generator) createFieldDef(fieldName string, field *ast.Field) FieldDef {
 	fieldDef := FieldDef{
-		Name: field.Name(),
-		Type: types.TypeString(field.Type(), nil),
-		Doc:  fmt.Sprintf("%s field from upstream", field.Name()),
+		Name: fieldName,
+		Type: g.typeToString(field.Type),
 	}
 
 	// Extract JSON tag
-	if tag != "" {
-		fieldDef.JSONTag = tag
+	if field.Tag != nil {
+		tag := strings.Trim(field.Tag.Value, "`")
+		if jsonTag := parseStructTag(tag, "json"); jsonTag != "" {
+			fieldDef.JSONTag = jsonTag
+		}
 	}
 
-	// Determine markers based on field path and registry
-	// For now, apply safe defaults
-	fieldDef.Markers = g.getMarkersForField(field.Name())
+	// Extract documentation
+	if field.Doc != nil {
+		fieldDef.Doc = strings.TrimSpace(field.Doc.Text())
+	}
+
+	// Get markers for this field
+	fieldDef.Markers = g.getMarkersForField(fieldName)
 
 	return fieldDef
+}
+
+// typeToString converts an AST type expression to a string
+func (g *Generator) typeToString(expr ast.Expr) string {
+	switch t := expr.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.StarExpr:
+		return "*" + g.typeToString(t.X)
+	case *ast.ArrayType:
+		return "[]" + g.typeToString(t.Elt)
+	case *ast.MapType:
+		return "map[" + g.typeToString(t.Key) + "]" + g.typeToString(t.Value)
+	case *ast.SelectorExpr:
+		return g.typeToString(t.X) + "." + t.Sel.Name
+	default:
+		return "interface{}"
+	}
 }
 
 // getMarkersForField returns markers for a field, from registry or defaults
@@ -124,4 +168,21 @@ func (g *Generator) getMarkersForField(fieldName string) []string {
 		"+k8s:openapi-gen=false",
 		"+hyperfleet:write-mode=service-set",
 	}
+}
+
+// parseStructTag extracts a specific tag value from struct tag string
+func parseStructTag(tag, key string) string {
+	// Simple tag parser - handles: `json:"name,omitempty" yaml:"name"`
+	parts := strings.Fields(tag)
+	prefix := key + `:"`
+
+	for _, part := range parts {
+		if strings.HasPrefix(part, prefix) {
+			value := strings.TrimPrefix(part, prefix)
+			value = strings.TrimSuffix(value, `"`)
+			return value
+		}
+	}
+
+	return ""
 }
