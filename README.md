@@ -53,11 +53,70 @@ Auto-generates bidirectional conversion functions between CRD and REST types.
 ### 6. Runtime Validator
 Generic validation using field metadata registry to enforce write-mode and feature gate rules.
 
+## Quick Start
+
+### Build the Tools
+
+```bash
+make build-tools
+```
+
+This builds:
+- `bin/marker-scanner` - Extract markers from Go types and generate field registry
+- `bin/passthrough-gen` - Generate passthrough types from upstream Go code
+
+### Try the Marker Scanner
+
+Scan the example types and generate a field registry:
+
+```bash
+./bin/marker-scanner \
+  -input-dirs=./examples \
+  -output-file=/tmp/field_metadata.go \
+  --verbose
+```
+
+Output shows:
+- Table of all fields with their markers
+- Summary statistics (mutable/immutable/service-set counts)
+- Generated registry file location
+
+### Try the Passthrough Generator
+
+Generate passthrough types from the example types:
+
+```bash
+./bin/passthrough-gen \
+  -source-dir=./examples \
+  -output-dir=/tmp/passthrough-output \
+  -types=ClusterSpec
+```
+
+Or generate from a cloned HyperShift repository:
+
+```bash
+# First, clone HyperShift
+git clone https://github.com/openshift/hypershift /path/to/hypershift
+
+# Then generate passthrough types
+./bin/passthrough-gen \
+  -source-dir=/path/to/hypershift/api/hypershift/v1beta1 \
+  -output-dir=./api/v1alpha1 \
+  -types=HostedClusterSpec,NodePoolSpec
+```
+
 ## Project Status
 
 🚧 **Proof of Concept** - Active development
 
-See [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383) for implementation tracking.
+**Completed:**
+- ✅ Marker scanner with field registry generator ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
+- ✅ Passthrough type generator ([ROSAENG-61384](https://redhat.atlassian.net/browse/ROSAENG-61384))
+
+**In Progress:**
+- OpenAPI integration ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
+
+See [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383) for full implementation tracking.
 
 ## Related Projects
 
