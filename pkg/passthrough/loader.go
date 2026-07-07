@@ -110,9 +110,14 @@ func (g *Generator) createFieldDef(fieldName string, field *ast.Field) FieldDef 
 		}
 	}
 
-	// Extract documentation
+	// Extract documentation (first line only, collapsed to single line)
 	if field.Doc != nil {
-		fieldDef.Doc = strings.TrimSpace(field.Doc.Text())
+		doc := strings.TrimSpace(field.Doc.Text())
+		// Take only first line and collapse to single line
+		lines := strings.Split(doc, "\n")
+		if len(lines) > 0 {
+			fieldDef.Doc = strings.TrimSpace(lines[0])
+		}
 	}
 
 	// Get markers for this field
