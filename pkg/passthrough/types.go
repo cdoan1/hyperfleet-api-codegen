@@ -24,6 +24,11 @@ type Generator struct {
 	parsedFiles map[string]*ast.File
 }
 
+// ParsedFiles returns the parsed files (for CLI tool)
+func (g *Generator) ParsedFiles() map[string]*ast.File {
+	return g.parsedFiles
+}
+
 // TypeDef represents a generated passthrough type definition
 type TypeDef struct {
 	// Name is the generated type name (e.g., "HostedClusterPassthrough")
