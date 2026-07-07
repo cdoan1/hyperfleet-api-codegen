@@ -1,5 +1,9 @@
 # HyperFleet API Codegen
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/openshift-online/hyperfleet-api-codegen)](https://goreportcard.com/report/github.com/openshift-online/hyperfleet-api-codegen)
+[![Coverage](https://img.shields.io/badge/coverage-73%25-brightgreen)](https://github.com/openshift-online/hyperfleet-api-codegen)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/openshift-online/hyperfleet-api-codegen)](go.mod)
+
 Code generation tools for managing the HyperFleet API: HyperShift CRD → HyperFleet CRD → Platform API OpenAPI.
 
 ## Overview
@@ -117,6 +121,26 @@ git clone https://github.com/openshift/hypershift /path/to/hypershift
 - OpenAPI integration ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
 
 See [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383) for full implementation tracking.
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+make test
+
+# Run tests with coverage
+make test-coverage
+
+# Run linter and tests
+make all
+```
+
+**Current test coverage:**
+- `pkg/markers`: 63.4%
+- `pkg/passthrough`: 78.3%
+- **Overall**: ~73%
 
 ## Related Projects
 
