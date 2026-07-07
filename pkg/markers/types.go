@@ -1,5 +1,7 @@
 package markers
 
+import "go/ast"
+
 // WriteMode defines how a field can be mutated by customers
 type WriteMode string
 
@@ -39,4 +41,7 @@ type MarkerScanner struct {
 
 	// Registry is the collected field metadata
 	Registry FieldRegistry
+
+	// typeCache maps type names to their struct definitions
+	typeCache map[string]*ast.StructType
 }
