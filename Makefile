@@ -94,22 +94,22 @@ generate-passthrough: $(PASSTHROUGH_GEN) ## Generate passthrough types from Hype
 			--package=v1alpha1; \
 	fi
 
-.PHONY: generate-passthrough-local
-generate-passthrough-local: $(PASSTHROUGH_GEN) ## Generate passthrough types from local HyperShift clone (requires HYPERSHIFT_DIR)
-	@if [ -z "$(HYPERSHIFT_DIR)" ]; then \
-		echo "Error: HYPERSHIFT_DIR is not set. Export it or set it in the command:"; \
-		echo "  export HYPERSHIFT_DIR=/path/to/hypershift"; \
-		echo "  make generate-passthrough-local"; \
-		echo "Or:"; \
-		echo "  make generate-passthrough-local HYPERSHIFT_DIR=/path/to/hypershift"; \
-		exit 1; \
-	fi
-	@echo "Generating passthrough types from $(HYPERSHIFT_TYPES_DIR)..."
-	$(PASSTHROUGH_GEN) \
-		--source-dir=$(HYPERSHIFT_TYPES_DIR) \
-		--types=$(HYPERSHIFT_TYPES) \
-		--output-dir=$(API_DIR) \
-		--package=v1alpha1
+# .PHONY: generate-passthrough-local
+# generate-passthrough-local: $(PASSTHROUGH_GEN) ## Generate passthrough types from local HyperShift clone (requires HYPERSHIFT_DIR)
+# 	@if [ -z "$(HYPERSHIFT_DIR)" ]; then \
+# 		echo "Error: HYPERSHIFT_DIR is not set. Export it or set it in the command:"; \
+# 		echo "  export HYPERSHIFT_DIR=/path/to/hypershift"; \
+# 		echo "  make generate-passthrough-local"; \
+# 		echo "Or:"; \
+# 		echo "  make generate-passthrough-local HYPERSHIFT_DIR=/path/to/hypershift"; \
+# 		exit 1; \
+# 	fi
+# 	@echo "Generating passthrough types from $(HYPERSHIFT_TYPES_DIR)..."
+# 	$(PASSTHROUGH_GEN) \
+# 		--source-dir=$(HYPERSHIFT_TYPES_DIR) \
+# 		--types=$(HYPERSHIFT_TYPES) \
+# 		--output-dir=$(API_DIR) \
+# 		--package=v1alpha1
 
 .PHONY: generate-openapi
 generate-openapi: $(OPENAPI_GEN) ## Generate OpenAPI schema from Go types
@@ -224,8 +224,8 @@ clean-generated: ## Clean generated code
 
 ##@ Documentation
 
-.PHONY: serve-swagger-ui
-serve-swagger-ui: ## Serve Swagger UI locally (requires Python 3)
+.PHONY: swagger-ui-serve
+swagger-ui-serve: ## Serve Swagger UI locally (requires Python 3)
 	@echo "Starting local server for Swagger UI..."
 	@echo "Swagger UI will be available at: http://localhost:8080/swagger-ui/"
 	@echo "OpenAPI spec at: http://localhost:8080/openapi/openapi.json"
@@ -235,8 +235,8 @@ serve-swagger-ui: ## Serve Swagger UI locally (requires Python 3)
 	@command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required but not installed"; exit 1; }
 	@cd .. && python3 -m http.server 8080 --directory $(shell pwd)
 
-.PHONY: open-swagger-ui
-open-swagger-ui: ## Open Swagger UI in browser (may need serve-swagger-ui running)
+.PHONY: swagger-ui-open
+swagger-ui-open: ## Open Swagger UI in browser (may need serve-swagger-ui running)
 	@echo "Opening Swagger UI in browser..."
 	@command -v open >/dev/null 2>&1 && open http://localhost:8080/swagger-ui/ || \
 	command -v xdg-open >/dev/null 2>&1 && xdg-open http://localhost:8080/swagger-ui/ || \
