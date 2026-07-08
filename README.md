@@ -160,6 +160,29 @@ Output shows:
 
 Example: A field marked `+openshift:enable:FeatureGate=HyperFleetAutoScaling` (TechPreview) is visible in TechPreview and DevPreview feature sets, but hidden in Default.
 
+### CRD Variants by Feature Set
+
+Generate feature-set-specific CRD variants that only include fields available in each tier:
+
+```bash
+# Generate all variants (Default, TechPreview, DevPreview)
+make generate-crd-variants
+
+# Or generate a specific variant
+bin/crd-variants \
+  --input=config/crd/bases/_clusters.yaml \
+  --base-name=cluster \
+  --feature-set=default \
+  --output-dir=config/crd/variants
+```
+
+This produces:
+- `cluster_default.yaml` - Only GA features (32 fields)
+- `cluster_techpreview.yaml` - GA + TechPreview features (35 fields, includes tags)
+- `cluster_devpreview.yaml` - All features (35 fields)
+
+Each variant is a complete, valid CRD that can be applied to a cluster. Use the variant matching your customer's feature set entitlement.
+
 ### Runtime Validation
 
 Validate API requests using the field metadata registry:
@@ -234,6 +257,7 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 - ✅ Production workflow validated - field curation and marker-based visibility
 - ✅ Feature gate tooling - registry, filtering, and per-feature-set field counts
 - ✅ Runtime validation - generic enforcement of write-mode and feature gate rules
+- ✅ CRD variant generator - produces feature-set-specific CRD YAML
 
 **What Works:**
 - Generate passthrough types from HyperShift v0.1.70
@@ -245,9 +269,9 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 - OpenAPI schema properly expands nested types with $ref
 - Swagger UI allows interactive browsing
 - Runtime validation enforces write-mode (mutable/immutable/service-set) and feature gates
+- CRD variants per feature set (Default/TechPreview/DevPreview)
 
 **Future Work:**
-- CRD variant generator (filter CRD YAML by feature set)
 - Auto-generated type conversion functions (CRD ↔ REST)
 
 See [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383) for full implementation tracking.

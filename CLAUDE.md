@@ -49,6 +49,7 @@ See `docs/api-management.md` for complete design specification.
 5. ✅ Feature gate tooling - registry, filtering, and per-feature-set field counts
 6. ✅ Swagger UI - interactive API documentation
 7. ✅ Runtime validation - generic enforcement using field metadata registry
+8. ✅ CRD variant generator - produces feature-set-specific CRD YAML
 
 **What Works:**
 - Three control markers: visibility, write-mode, feature gates
@@ -58,9 +59,9 @@ See `docs/api-management.md` for complete design specification.
 - OpenAPI schema generation with proper $ref expansion
 - Production workflow validated: field curation, marker-based visibility
 - Runtime validation enforces write-mode and feature gate rules with no field-specific code
+- CRD variant generation filters YAML by feature set
 
 **Remaining:**
-- CRD variant generator (filter CRD YAML by feature set)
 - Type conversion functions (CRD ↔ REST)
 
 ## Key Concepts

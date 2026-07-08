@@ -114,6 +114,16 @@ featuregate-info: ## Show feature gate registry and field counts per feature set
 	@$(GOBUILD) -o bin/featuregate-info ./cmd/featuregate-info >/dev/null 2>&1
 	@./bin/featuregate-info
 
+.PHONY: generate-crd-variants
+generate-crd-variants: ## Generate CRD variants for all feature sets
+	@echo "Generating CRD variants..."
+	@mkdir -p config/crd/variants
+	@$(GOBUILD) -o bin/crd-variants ./cmd/crd-variants >/dev/null 2>&1
+	@./bin/crd-variants \
+		--input=config/crd/bases/_clusters.yaml \
+		--base-name=cluster \
+		--output-dir=config/crd/variants
+
 .PHONY: manifests
 manifests: $(CONTROLLER_GEN) ## Generate CRD manifests
 	@echo "Generating CRD manifests..."
