@@ -15,10 +15,10 @@
       ],
       "properties": {
         "spec": {
-          "type": "object"
+          "$ref": "#/definitions/ClusterSpec"
         },
         "status": {
-          "type": "object"
+          "$ref": "#/definitions/ClusterStatus"
         }
       }
     },
@@ -75,7 +75,7 @@
         },
         "hostedCluster": {
           "description": "HostedCluster contains the full HyperShift HostedCluster configuration\nAll fields are generated from upstream and have safe defaults (hidden + service-set)\nuntil explicitly reviewed and exposed\n+kubebuilder:validation:Required",
-          "type": "object"
+          "$ref": "#/definitions/HostedClusterSpecPassthrough"
         },
         "properties": {
           "description": "Properties are arbitrary key-value pairs for customer metadata\n+hyperfleet:write-mode=mutable",
@@ -149,10 +149,10 @@
       ],
       "properties": {
         "spec": {
-          "type": "object"
+          "$ref": "#/definitions/NodePoolSpec"
         },
         "status": {
-          "type": "object"
+          "$ref": "#/definitions/NodePoolStatus"
         }
       }
     },
@@ -185,7 +185,7 @@
         },
         "clusterRef": {
           "description": "ClusterRef references the parent Cluster\n+kubebuilder:validation:Required",
-          "type": "object"
+          "$ref": "#/definitions/ClusterReference"
         },
         "displayName": {
           "description": "DisplayName is a human-readable name for the node pool\n+hyperfleet:write-mode=mutable",
@@ -200,7 +200,7 @@
         },
         "nodePool": {
           "description": "NodePool contains the full HyperShift NodePool configuration\nAll fields are generated from upstream and have safe defaults (hidden + service-set)\n+kubebuilder:validation:Required",
-          "type": "object"
+          "$ref": "#/definitions/NodePoolSpecPassthrough"
         }
       }
     },

@@ -21,10 +21,13 @@ func (g *Generator) Generate() error {
 	}
 
 	// Parse all Go files in input directories
-	definitions, err := g.scanTypes()
+	definitions, typeNames, err := g.scanTypes()
 	if err != nil {
 		return fmt.Errorf("scanning types: %w", err)
 	}
+
+	// Store type names for $ref generation
+	g.knownTypes = typeNames
 
 	// Create OpenAPI schema
 	swagger := &spec.Swagger{
@@ -92,8 +95,17 @@ func (g *Generator) generatePOC() error {
 }
 
 // scanTypes scans Go source files and generates OpenAPI definitions
-func (g *Generator) scanTypes() (spec.Definitions, error) {
+func (g *Generator) scanTypes() (spec.Definitions, map[string]bool, error) {
 	definitions := make(spec.Definitions)
+	typeNames := make(map[string]bool)
+
+	// First pass: collect all type names and AST nodes
+	type typeInfo struct {
+		name       string
+		structType *ast.StructType
+		doc        *ast.CommentGroup
+	}
+	var allTypes []typeInfo
 
 	for _, dir := range g.InputDirs {
 		fset := token.NewFileSet()
@@ -102,30 +114,67 @@ func (g *Generator) scanTypes() (spec.Definitions, error) {
 		//nolint:staticcheck // ParseDir is sufficient for our use case
 		pkgs, err := parser.ParseDir(fset, dir, func(fi os.FileInfo) bool {
 			name := fi.Name()
-			// Skip test files and generated passthrough files
+			// Skip test files
 			return !strings.HasSuffix(name, "_test.go") &&
 				!strings.HasPrefix(name, "zz_generated")
 		}, parser.ParseComments)
 
 		if err != nil {
-			return nil, fmt.Errorf("parsing directory %s: %w", dir, err)
+			return nil, nil, fmt.Errorf("parsing directory %s: %w", dir, err)
 		}
 
-		// Process each package
+		// Collect all type names first
 		for _, pkg := range pkgs {
 			for _, file := range pkg.Files {
-				if err := g.processFile(file, definitions); err != nil {
-					return nil, err
+				for _, decl := range file.Decls {
+					genDecl, ok := decl.(*ast.GenDecl)
+					if !ok || genDecl.Tok != token.TYPE {
+						continue
+					}
+
+					for _, spec := range genDecl.Specs {
+						typeSpec, ok := spec.(*ast.TypeSpec)
+						if !ok || !typeSpec.Name.IsExported() {
+							continue
+						}
+
+						structType, ok := typeSpec.Type.(*ast.StructType)
+						if !ok {
+							continue
+						}
+
+						typeName := typeSpec.Name.Name
+						typeNames[typeName] = true
+						allTypes = append(allTypes, typeInfo{
+							name:       typeName,
+							structType: structType,
+							doc:        genDecl.Doc,
+						})
+					}
 				}
 			}
 		}
 	}
 
-	return definitions, nil
+	// Store known types BEFORE generating schemas
+	g.knownTypes = typeNames
+
+	// Second pass: generate schemas with $ref support
+	for _, ti := range allTypes {
+		schema, err := g.generateSchema(ti.name, ti.structType, ti.doc)
+		if err != nil {
+			return nil, nil, fmt.Errorf("generating schema for %s: %w", ti.name, err)
+		}
+		if schema != nil {
+			definitions[ti.name] = *schema
+		}
+	}
+
+	return definitions, typeNames, nil
 }
 
 // processFile processes a single Go source file
-func (g *Generator) processFile(file *ast.File, definitions spec.Definitions) error {
+func (g *Generator) processFile(file *ast.File, definitions spec.Definitions, typeNames map[string]bool) error {
 	// Find all type declarations
 	for _, decl := range file.Decls {
 		genDecl, ok := decl.(*ast.GenDecl)
@@ -149,14 +198,18 @@ func (g *Generator) processFile(file *ast.File, definitions spec.Definitions) er
 				continue
 			}
 
+			// Track this type name
+			typeName := typeSpec.Name.Name
+			typeNames[typeName] = true
+
 			// Generate OpenAPI schema for this type
-			schema, err := g.generateSchema(typeSpec.Name.Name, structType, genDecl.Doc)
+			schema, err := g.generateSchema(typeName, structType, genDecl.Doc)
 			if err != nil {
-				return fmt.Errorf("generating schema for %s: %w", typeSpec.Name.Name, err)
+				return fmt.Errorf("generating schema for %s: %w", typeName, err)
 			}
 
 			if schema != nil {
-				definitions[typeSpec.Name.Name] = *schema
+				definitions[typeName] = *schema
 			}
 		}
 	}
@@ -284,10 +337,20 @@ func (g *Generator) generateFieldSchema(field *ast.Field) spec.Schema {
 				},
 			}
 		} else {
-			// Reference to another type or imported type
-			// For now, treat as object
-			schema.Type = []string{"object"}
-			// Could add $ref here: schema.Ref = spec.MustCreateRef("#/definitions/" + typeStr)
+			// Reference to another type - check if it's a known type
+			// Strip package prefix (e.g., hypershiftv1beta1.PlatformSpec -> PlatformSpec)
+			typeName := typeStr
+			if idx := strings.LastIndex(typeStr, "."); idx != -1 {
+				typeName = typeStr[idx+1:]
+			}
+
+			// If it's a known type (defined in our input dirs), use $ref
+			if g.knownTypes != nil && g.knownTypes[typeName] {
+				schema.Ref = spec.MustCreateRef("#/definitions/" + typeName)
+			} else {
+				// Unknown type (imported from external package), treat as object
+				schema.Type = []string{"object"}
+			}
 		}
 	}
 

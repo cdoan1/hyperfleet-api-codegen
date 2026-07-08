@@ -13,6 +13,9 @@ type Generator struct {
 
 	// Version is the API version
 	Version string
+
+	// knownTypes tracks which type names we've seen (for $ref generation)
+	knownTypes map[string]bool
 }
 
 // NewGenerator creates a new OpenAPI generator
