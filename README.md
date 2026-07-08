@@ -78,15 +78,17 @@ make build-tools
 ```
 
 This builds:
-- `bin/marker-scanner` - Extract markers from Go types and generate field registry
-- `bin/passthrough-gen` - Generate passthrough types from upstream Go code
+- `bin/marker-scanner` - Extract markers from Go types and generate field registry (JSON + Go)
+- `bin/passthrough-gen` - Generate passthrough types from upstream Go code with marker preservation
+- `bin/openapi-gen` - Generate OpenAPI schema from Go types
+- `bin/featuregate-info` - Display feature gate registry and field counts per feature set
 
 ### Try the Marker Scanner
 
 Scan the actual HyperFleet API types and generate a field registry:
 
 ```bash
-# Scan current API types (214 fields: 18 mutable, 196 service-set, 26 visible)
+# Scan current API types (58 fields tracked)
 ./bin/marker-scanner \
   --input-dirs=./api/v1alpha1 \
   --output-file=/tmp/field_metadata.go \
@@ -97,6 +99,7 @@ Output shows:
 - Table of all fields with their markers and visibility
 - Summary statistics (mutable/immutable/service-set counts)
 - Visibility breakdown (visible vs hidden fields)
+- Generates both `.go` file (for Go consumers) and `.json` file (for tooling)
 
 For teaching examples, see [examples/README.md](examples/README.md) which has simple demonstration types.
 
@@ -131,7 +134,7 @@ make generate-passthrough
    make generate-registry generate-openapi
    ```
 
-Currently exposed fields: `etcd`, `platform`, `controlPlaneRelease`, `kubeAPIServerDNSName`
+Currently exposed fields: 11 visible in Default feature set (see `make featuregate-info` for breakdown)
 
 **Bumping HyperShift version:**
 
@@ -168,15 +171,18 @@ make featuregate-info
 
 Output shows:
 - All registered feature gates with their stages (GA, TechPreview, DevPreview)
-- Field counts per feature set (Default includes 32 fields, TechPreview includes 35, etc.)
+- Field counts per feature set (Default: 11 fields, TechPreview: 12 fields, DevPreview: 12 fields)
 - Which gates are enabled in each feature set
 
 **Feature set hierarchy:**
-- **Default** - GA features only (production-ready)
-- **TechPreviewNoUpgrade** - GA + TechPreview features
-- **DevPreviewNoUpgrade** - GA + TechPreview + DevPreview features
+- **Default** - GA features only (production-ready) - 11 visible fields
+- **TechPreviewNoUpgrade** - GA + TechPreview features - 12 visible fields
+- **DevPreviewNoUpgrade** - All features - 12 visible fields
 
-Example: A field marked `+openshift:enable:FeatureGate=HyperFleetAutoScaling` (TechPreview) is visible in TechPreview and DevPreview feature sets, but hidden in Default.
+Example gates in current registry:
+- `HyperFleetEtcdConfig` (GA) - enabled in all feature sets
+- `HyperFleetAutoScaling` (TechPreview) - enabled in TechPreview and DevPreview only
+- `HyperFleetCustomDNS` (DevPreview) - enabled in DevPreview only
 
 ### CRD Variants by Feature Set
 
@@ -195,9 +201,9 @@ bin/crd-variants \
 ```
 
 This produces:
-- `cluster_default.yaml` - Only GA features (32 fields)
-- `cluster_techpreview.yaml` - GA + TechPreview features (35 fields, includes tags)
-- `cluster_devpreview.yaml` - All features (35 fields)
+- `cluster_default.yaml` - Only GA features (11 visible fields)
+- `cluster_techpreview.yaml` - GA + TechPreview features (12 visible fields)
+- `cluster_devpreview.yaml` - All features (12 visible fields)
 
 Each variant is a complete, valid CRD that can be applied to a cluster. Use the variant matching your customer's feature set entitlement.
 
@@ -283,9 +289,9 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 - All fields start hidden (safe defaults)
 - Marker preservation across regenerations via JSON registry
 - Developers curate which fields to expose
-- Field metadata registry tracks all 58 fields (3 feature-gated)
-- Feature gate registry with 4 example gates (1 GA, 2 TechPreview, 1 DevPreview)
-- Per-feature-set field filtering (Default: 32 fields, TechPreview: 35 fields)
+- Field metadata registry tracks all 58 fields (4 feature-gated)
+- Feature gate registry with 4 gates (1 GA, 2 TechPreview, 1 DevPreview)
+- Per-feature-set field filtering (Default: 11 visible, TechPreview: 12 visible, DevPreview: 12 visible)
 - OpenAPI schema properly expands nested types with $ref
 - Swagger UI allows interactive browsing
 - Runtime validation enforces write-mode (mutable/immutable/service-set) and feature gates
