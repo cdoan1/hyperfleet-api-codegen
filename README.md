@@ -165,6 +165,29 @@ View feature gate registry and field counts per feature set:
 
 ```bash
 make featuregate-info
+
+=== HyperFleet Feature Gate Registry ===
+
+Registered Feature Gates:
+
+  HyperFleetAutoScaling           Stage: TechPreview   Enables cluster autoscaling configuration
+  HyperFleetCustomDNS             Stage: DevPreview    Enables custom DNS configuration for development/testing
+  HyperFleetEtcdConfig            Stage: GA            Allows customers to configure etcd settings
+  HyperFleetSecretEncryption      Stage: TechPreview   Allows customers to configure secret encryption
+
+=== Feature Set Field Summary ===
+
+Default:
+  Total visible fields: 11
+  Enabled gates: [HyperFleetEtcdConfig]
+
+TechPreviewNoUpgrade:
+  Total visible fields: 12
+  Enabled gates: [HyperFleetEtcdConfig HyperFleetAutoScaling HyperFleetSecretEncryption]
+
+DevPreviewNoUpgrade:
+  Total visible fields: 12
+  Enabled gates: [HyperFleetEtcdConfig HyperFleetAutoScaling HyperFleetSecretEncryption HyperFleetCustomDNS]
 ```
 
 Output shows:
