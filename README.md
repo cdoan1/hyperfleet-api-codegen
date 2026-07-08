@@ -26,7 +26,7 @@ HyperFleet CRDs (Go structs with markers)
 Platform API (OpenAPI spec + field metadata registry)
 ```
 
-### Three Control Markers
+### Control Markers
 
 Go markers on fields control visibility, mutability, and entitlements:
 
@@ -54,7 +54,7 @@ When regenerating passthrough types (e.g., after bumping HyperShift version):
 3. New upstream fields get safe defaults: hidden (`+k8s:openapi-gen=false`) + service-set (`+hyperfleet:write-mode=service-set`)
 4. Result: Reviewed field markers persist across regenerations, only genuinely new fields need curation
 
-### 2. Marker Scanner  
+### 2. Marker Scanner
 Parses Go source files and generates a field metadata registry mapping each field path to its write mode and feature gate.
 
 ### 3. OpenAPI Generator
@@ -68,6 +68,8 @@ Auto-generates bidirectional conversion functions between CRD and REST types.
 
 ### 6. Runtime Validator
 Generic validation using field metadata registry to enforce write-mode and feature gate rules.
+
+---
 
 ## Quick Start
 
@@ -83,7 +85,7 @@ This builds:
 - `bin/openapi-gen` - Generate OpenAPI schema from Go types
 - `bin/featuregate-info` - Display feature gate registry and field counts per feature set
 
-### Try the Marker Scanner
+### Marker Scanner
 
 Scan the actual HyperFleet API types and generate a field registry:
 
@@ -103,9 +105,9 @@ Output shows:
 
 For teaching examples, see [examples/README.md](examples/README.md) which has simple demonstration types.
 
-### Try the Passthrough Generator
+### Dry Run the Passthrough Generator
 
-**Test HyperShift integration** (uses go.mod dependency):
+**Test Passthrough Generation** (uses go.mod dependency):
 
 ```bash
 make test-hypershift-integration
@@ -113,7 +115,9 @@ make test-hypershift-integration
 
 This generates passthrough types from HyperShift v0.1.70 (resolved via go.mod) to `test-output/`. This demonstrates the complete workflow without requiring a local HyperShift clone.
 
-**Production workflow: Generate and curate HyperShift types**
+### Production Workflow
+
+**1. Generate and curate HyperShift types**
 
 The passthrough generator creates HyperFleet wrappers from upstream HyperShift types:
 
@@ -125,7 +129,7 @@ make generate-passthrough
 # All fields start hidden (+k8s:openapi-gen=false) with safe defaults
 ```
 
-**Field curation workflow:**
+**2. Field curation workflow:**
 
 1. Edit `api/v1alpha1/hostedclusterspec.passthrough.go`
 2. Remove `+k8s:openapi-gen=false` from fields you want to expose
@@ -136,7 +140,7 @@ make generate-passthrough
 
 Currently exposed fields: 11 visible in Default feature set (see `make featuregate-info` for breakdown)
 
-**Bumping HyperShift version:**
+**3. Bumping HyperShift version:**
 
 ```bash
 # Update to a newer version
@@ -153,13 +157,7 @@ git diff api/v1alpha1/hostedclusterspec.passthrough.go
 make generate-registry generate-openapi
 ```
 
-**How marker preservation works:**
-1. `make generate-registry` creates both `field_metadata.go` (for Go consumers) and `field_metadata.json` (for tools)
-2. `make generate-passthrough` loads `field_metadata.json` and applies saved markers to existing fields
-3. New fields from upstream HyperShift that aren't in the registry get safe defaults (hidden + service-set)
-4. Your reviewed marker choices persist automatically - no manual re-annotation needed
-
-See [docs/workflow.md](docs/workflow.md) for the complete three-stage pipeline.
+---
 
 ### Feature Gates and Field Entitlements
 
@@ -246,6 +244,8 @@ The validator enforces:
 
 See [pkg/validation/example_test.go](pkg/validation/example_test.go) for more examples.
 
+---
+
 ### Browse the API with Swagger UI
 
 View interactive API documentation:
@@ -268,6 +268,8 @@ The Swagger UI provides:
 - Filter and search capabilities
 
 See [swagger-ui/README.md](swagger-ui/README.md) for more details.
+
+---
 
 ## Project Status
 
