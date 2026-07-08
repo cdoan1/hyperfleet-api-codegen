@@ -72,12 +72,10 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.autoNode": {
 		FieldPath: "spec.hostedCluster.autoNode",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.autoscaling": {
 		FieldPath: "spec.hostedCluster.autoscaling",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.capabilities": {
 		FieldPath: "spec.hostedCluster.capabilities",
@@ -102,6 +100,7 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.controlPlaneRelease": {
 		FieldPath: "spec.hostedCluster.controlPlaneRelease",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.controllerAvailabilityPolicy": {
 		FieldPath: "spec.hostedCluster.controllerAvailabilityPolicy",
@@ -116,6 +115,7 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.etcd": {
 		FieldPath: "spec.hostedCluster.etcd",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.fips": {
 		FieldPath: "spec.hostedCluster.fips",
@@ -188,7 +188,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.release": {
 		FieldPath: "spec.hostedCluster.release",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.secretEncryption": {
 		FieldPath: "spec.hostedCluster.secretEncryption",

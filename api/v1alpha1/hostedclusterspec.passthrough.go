@@ -12,10 +12,11 @@ import (
 // HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift
 type HostedClusterSpecPassthrough struct {
 	// release specifies the desired OCP release payload for all the hosted cluster components.
-	// +k8s:openapi-gen=false
+	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	Release hypershiftv1beta1.Release `json:"release"`
 	// controlPlaneRelease is like spec.release but only for the components running on the management cluster.
+	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set
 	ControlPlaneRelease *hypershiftv1beta1.Release `json:"controlPlaneRelease,omitempty"`
 	// clusterID uniquely identifies this cluster. This is expected to be an RFC4122 UUID value (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx in hexadecimal digits).
@@ -58,15 +59,15 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	Networking hypershiftv1beta1.ClusterNetworking `json:"networking"`
 	// autoscaling specifies auto-scaling behavior that applies to all NodePools
-	// +k8s:openapi-gen=false
+	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	Autoscaling hypershiftv1beta1.ClusterAutoscaling `json:"autoscaling,omitempty"`
 	// autoNode specifies the configuration for the autoNode feature.
-	// +k8s:openapi-gen=false
+	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	AutoNode *hypershiftv1beta1.AutoNode `json:"autoNode,omitempty"`
 	// etcd specifies configuration for the control plane etcd cluster. The
-	// +k8s:openapi-gen=true
+	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set
 	Etcd hypershiftv1beta1.EtcdSpec `json:"etcd"`
 	// services specifies how individual control plane services endpoints are published for consumption.

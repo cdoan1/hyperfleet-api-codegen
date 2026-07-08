@@ -134,16 +134,16 @@
       "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
       "type": "object",
       "required": [
-        "etcd",
-        "platform"
+        "platform",
+        "release"
       ],
       "properties": {
-        "controlPlaneRelease": {
-          "description": "controlPlaneRelease is like spec.release but only for the components running on the management cluster.\n+hyperfleet:write-mode=service-set",
+        "autoNode": {
+          "description": "autoNode specifies the configuration for the autoNode feature.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
           "type": "object"
         },
-        "etcd": {
-          "description": "etcd specifies configuration for the control plane etcd cluster. The\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+        "autoscaling": {
+          "description": "autoscaling specifies auto-scaling behavior that applies to all NodePools\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
           "type": "object"
         },
         "kubeAPIServerDNSName": {
@@ -152,6 +152,10 @@
         },
         "platform": {
           "description": "platform specifies the underlying infrastructure provider for the cluster\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "object"
+        },
+        "release": {
+          "description": "release specifies the desired OCP release payload for all the hosted cluster components.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
           "type": "object"
         }
       }
