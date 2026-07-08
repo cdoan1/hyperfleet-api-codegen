@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/openshift-online/hyperfleet-api-codegen/pkg/markers"
-	"github.com/openshift-online/hyperfleet-api-codegen/pkg/passthrough"
+	"github.com/cdoan1/hyperfleet-api-codegen/pkg/markers"
+	"github.com/cdoan1/hyperfleet-api-codegen/pkg/passthrough"
 )
 
 func main() {

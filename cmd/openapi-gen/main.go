@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/openshift-online/hyperfleet-api-codegen/pkg/openapi"
+	"github.com/cdoan1/hyperfleet-api-codegen/pkg/openapi"
 )
 
 func main() {

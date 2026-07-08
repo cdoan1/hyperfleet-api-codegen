@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/openshift-online/hyperfleet-api-codegen/pkg/markers"
+	"github.com/cdoan1/hyperfleet-api-codegen/pkg/markers"
 )
 
 func TestGenerate(t *testing.T) {
