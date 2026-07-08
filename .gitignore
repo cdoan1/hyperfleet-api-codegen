@@ -27,5 +27,6 @@ go.work
 
 # Generated files
 zz_generated.*.go
+zz_generated.*.go.raw
 config/crd/bases/*.yaml
 openapi/openapi.yaml
