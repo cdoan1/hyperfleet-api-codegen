@@ -36,70 +36,79 @@ This skill reviews git commits since the last Jira update and posts progress to 
 5. **Post updates to active tickets**
    - For each active ticket with related commits:
      - Use `mcp__atlassian__addCommentToJiraIssue` to add progress comment
-     - Include:
-       - Summary of work completed
-       - Relevant commit hashes
-       - Updated metrics (test coverage, file counts, etc.)
-       - Next steps if applicable
-   - Format as markdown for readability
+     - **Keep under 8 lines total**
+     - Include only:
+       - Date
+       - 2-4 bullet points of work done (with commit hashes)
+       - Changed metrics (if any)
+     - Skip verbose summaries and next steps unless critical
 
 6. **Update epic with overall progress**
    - Post summary comment to ROSAENG-61383
-   - Include:
-     - Date range of commits
-     - Number of commits
-     - Summary of major changes
-     - Updated completion status
-     - Link to repository
+   - **Maximum 10 lines**
+   - Include only:
+     - Date and commit count
+     - 3-5 key changes (one line each)
+     - Coverage/metrics if changed
+     - Repository link
 
-## Example Update Format
+## Update Format - Keep It Brief
 
-For individual tickets:
+**IMPORTANT**: Humans reviewing Jira don't have time for lengthy updates. Keep updates concise and scannable.
+
+### Rules for Brevity
+- Maximum 10 lines per update
+- Use bullets, not paragraphs
+- State facts, skip explanations
+- One sentence per item
+- No verbose summaries
+
+### For Individual Tickets
+
+**Good** (5 lines):
+```markdown
+Update - <date>
+- Implemented X (abc123)
+- Added Y docs (def456)
+- Fixed Z (ghi789)
+- Coverage: 73% (+3%)
+```
+
+**Bad** (too wordy):
 ```markdown
 ## Progress Update - <date>
 
 ### Work Completed
-- Implemented X feature (commit abc123)
-- Added Y documentation (commit def456)
-- Fixed Z issue (commit ghi789)
-
-### Metrics
-- Test coverage: 73% (+3%)
-- Files changed: 12
-- Lines added: +450/-120
-
-### Status
-[Brief status summary]
-
-### Next Steps
-- [If applicable]
+This week we successfully implemented the X feature which allows...
+[Don't do this - too long]
 ```
 
-For epic:
+### For Epic
+
+**Good** (8 lines):
+```markdown
+Update - <date>
+- <number> commits since <date>
+- Makefile: Added HYPERSHIFT_DIR support
+- Docs: workflow.md, examples/README.md
+- Examples: cluster/nodepool CRD templates
+- Coverage: 73% (unchanged)
+- Repo: https://github.com/org/repo
+```
+
+**Bad** (too wordy):
 ```markdown
 ## Development Update - <date range>
 
 ### Summary
-<number> commits pushed since <last update date>
-
-### Major Changes
-1. **Component 1**: [summary]
-2. **Component 2**: [summary]
-3. **Documentation**: [summary]
-
-### Ticket Status
-- ROSAENG-61389: ✅ Complete (marker-scanner)
-- ROSAENG-61384: ✅ Complete (passthrough-gen)
-- ROSAENG-61387: ✅ Complete (openapi-gen POC)
-
-### Repository
-https://github.com/openshift-online/hyperfleet-api-codegen
-
-### Metrics
-- Overall test coverage: 73%
-- Total commits: <number>
-- Files in repo: <number>
+We pushed <number> commits since the last update...
+[Don't do this - too long]
 ```
+
+### Maximum Lengths
+- Individual ticket update: 5-8 lines
+- Epic update: 8-10 lines
+- If more detail needed: link to commit or doc
 
 ## Usage
 
