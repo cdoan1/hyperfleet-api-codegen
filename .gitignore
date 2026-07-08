@@ -9,6 +9,9 @@ bin/
 coverage.out
 *.test
 
+# Test output directories
+test-output/
+
 # Go workspace file
 go.work
 

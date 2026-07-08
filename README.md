@@ -97,13 +97,21 @@ See [examples/README.md](examples/README.md) for details on the two example sets
 
 ### Try the Passthrough Generator
 
-Quick demo using built-in examples (no HyperShift needed):
+**Quick demo using built-in examples** (no HyperShift needed):
 
 ```bash
 make demo-passthrough
 ```
 
 This generates passthrough types from `examples/original/` to `/tmp/demo-output`.
+
+**Test HyperShift integration** (uses go.mod dependency):
+
+```bash
+make test-hypershift-integration
+```
+
+This generates passthrough types from HyperShift v0.1.70 (resolved via go.mod) to `test-output/`. This demonstrates the complete workflow without requiring a local HyperShift clone.
 
 **Generate from HyperShift via go.mod (recommended):**
 

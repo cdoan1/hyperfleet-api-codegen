@@ -124,6 +124,23 @@ demo-passthrough: $(PASSTHROUGH_GEN) ## Demo: Generate passthrough types to /tmp
 	@echo "Demo output generated at /tmp/demo-output"
 	@ls -lh /tmp/demo-output
 
+.PHONY: test-hypershift-integration
+test-hypershift-integration: $(PASSTHROUGH_GEN) ## Test: Generate from HyperShift via go.mod to test-output/
+	@echo "Testing passthrough generation from HyperShift v0.1.70 (via go.mod)..."
+	@mkdir -p test-output
+	$(PASSTHROUGH_GEN) \
+		--import-path=$(HYPERSHIFT_IMPORT_PATH) \
+		--types=$(HYPERSHIFT_TYPES) \
+		--output-dir=./test-output \
+		--package=v1alpha1
+	@echo ""
+	@echo "Successfully generated from go.mod dependency!"
+	@echo "Output: test-output/zz_generated.passthrough.go"
+	@wc -l test-output/zz_generated.passthrough.go
+	@echo ""
+	@echo "Sample (first 20 lines):"
+	@head -20 test-output/zz_generated.passthrough.go
+
 ##@ Build
 
 .PHONY: build-tools
