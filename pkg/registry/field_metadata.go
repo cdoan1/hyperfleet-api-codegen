@@ -105,7 +105,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"controlPlaneRelease": {
 		FieldPath: "controlPlaneRelease",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"controllerAvailabilityPolicy": {
 		FieldPath: "controllerAvailabilityPolicy",
@@ -186,7 +185,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"hostedCluster.controlPlaneRelease": {
 		FieldPath: "hostedCluster.controlPlaneRelease",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"hostedCluster.controllerAvailabilityPolicy": {
 		FieldPath: "hostedCluster.controllerAvailabilityPolicy",
@@ -230,7 +228,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"hostedCluster.kubeAPIServerDNSName": {
 		FieldPath: "hostedCluster.kubeAPIServerDNSName",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"hostedCluster.labels": {
 		FieldPath: "hostedCluster.labels",
@@ -405,7 +402,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"items.spec.hostedCluster.controlPlaneRelease": {
 		FieldPath: "items.spec.hostedCluster.controlPlaneRelease",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"items.spec.hostedCluster.controllerAvailabilityPolicy": {
 		FieldPath: "items.spec.hostedCluster.controllerAvailabilityPolicy",
@@ -449,7 +445,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"items.spec.hostedCluster.kubeAPIServerDNSName": {
 		FieldPath: "items.spec.hostedCluster.kubeAPIServerDNSName",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"items.spec.hostedCluster.labels": {
 		FieldPath: "items.spec.hostedCluster.labels",
@@ -616,7 +611,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"kubeAPIServerDNSName": {
 		FieldPath: "kubeAPIServerDNSName",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"labels": {
 		FieldPath: "labels",
@@ -845,7 +839,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.controlPlaneRelease": {
 		FieldPath: "spec.hostedCluster.controlPlaneRelease",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.controllerAvailabilityPolicy": {
 		FieldPath: "spec.hostedCluster.controllerAvailabilityPolicy",
@@ -889,7 +882,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.kubeAPIServerDNSName": {
 		FieldPath: "spec.hostedCluster.kubeAPIServerDNSName",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.labels": {
 		FieldPath: "spec.hostedCluster.labels",

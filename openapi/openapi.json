@@ -131,9 +131,17 @@
         "platform"
       ],
       "properties": {
+        "controlPlaneRelease": {
+          "description": "controlPlaneRelease is like spec.release but only for the components running on the management cluster.\n+hyperfleet:write-mode=service-set",
+          "type": "object"
+        },
         "etcd": {
           "description": "etcd specifies configuration for the control plane etcd cluster. The\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
           "type": "object"
+        },
+        "kubeAPIServerDNSName": {
+          "description": "kubeAPIServerDNSName specifies a desired DNS name to resolve to the KAS.\n+hyperfleet:write-mode=service-set",
+          "type": "string"
         },
         "platform": {
           "description": "platform specifies the underlying infrastructure provider for the cluster\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",

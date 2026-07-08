@@ -16,7 +16,6 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	Release hypershiftv1beta1.Release `json:"release"`
 	// controlPlaneRelease is like spec.release but only for the components running on the management cluster.
-	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set
 	ControlPlaneRelease *hypershiftv1beta1.Release `json:"controlPlaneRelease,omitempty"`
 	// clusterID uniquely identifies this cluster. This is expected to be an RFC4122 UUID value (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx in hexadecimal digits).
@@ -40,7 +39,6 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	Platform hypershiftv1beta1.PlatformSpec `json:"platform"`
 	// kubeAPIServerDNSName specifies a desired DNS name to resolve to the KAS.
-	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set
 	KubeAPIServerDNSName string `json:"kubeAPIServerDNSName,omitempty"`
 	// controllerAvailabilityPolicy specifies the availability policy applied to critical control plane components like the Kube API Server.
