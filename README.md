@@ -30,11 +30,11 @@ Platform API (OpenAPI spec + field metadata registry)
 
 Go markers on fields control visibility, mutability, and entitlements:
 
-| Marker | Purpose | Values |
-|--------|---------|--------|
-| `+k8s:openapi-gen=false` | **Visibility** - Controls whether field appears in OpenAPI schema | `true` (visible, default) / `false` (hidden) |
-| `+hyperfleet:write-mode=X` | **Write Mode** - Controls customer mutability | `mutable` / `immutable` / `service-set` |
-| `+openshift:enable:FeatureGate=X` | **Feature Gate** - Controls per-customer entitlements | Feature set name (e.g., `TechPreviewNoUpgrade`) |
+| Marker | Purpose | Values | Description |
+|--------|---------|--------|-------------|
+| `+k8s:openapi-gen=false` | **Visibility** | `true` (visible, default)<br/>`false` (hidden) | Controls whether field appears in OpenAPI schema |
+| `+hyperfleet:write-mode=X` | **Write Mode** | `mutable`<br/>`immutable`<br/>`service-set` | `mutable`: customer can set and change<br/>`immutable`: customer sets on create, cannot change<br/>`service-set`: platform fills it, customer cannot touch |
+| `+openshift:enable:FeatureGate=X` | **Feature Gate** | Feature set name | Controls per-customer entitlements (e.g., `TechPreviewNoUpgrade`) |
 
 ## Documentation
 
