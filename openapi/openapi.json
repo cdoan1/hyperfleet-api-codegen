@@ -83,6 +83,13 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "tags": {
+          "description": "Tags are customer-defined labels for organizational purposes\nThis is a TechPreview feature\n+hyperfleet:write-mode=mutable\n+openshift:enable:FeatureGate=HyperFleetAutoScaling",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },

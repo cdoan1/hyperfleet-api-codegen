@@ -13,6 +13,11 @@ func TestMarkerExtraction(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "types.go")
 	content := `package test
 
+// Root type - scanner starts here
+type Cluster struct {
+	Spec ClusterSpec ` + "`json:\"spec\"`" + `
+}
+
 type ClusterSpec struct {
 	// Customer can set and change
 	// +hyperfleet:write-mode=mutable
@@ -49,18 +54,18 @@ type EtcdSpec struct {
 		t.Fatalf("Scan failed: %v", err)
 	}
 
-	// Verify results
+	// Verify results - paths are now fully qualified from root type
 	tests := []struct {
 		fieldPath   string
 		writeMode   WriteMode
 		featureGate string
 		hidden      bool
 	}{
-		{"deleteProtection", Mutable, "", false},
-		{"name", Immutable, "", false},
-		{"accountId", ServiceSet, "", true},
-		{"etcd", Immutable, "HyperFleetEtcdConfig", false},
-		{"etcd.managementType", Immutable, "", false},
+		{"spec.deleteProtection", Mutable, "", false},
+		{"spec.name", Immutable, "", false},
+		{"spec.accountId", ServiceSet, "", true},
+		{"spec.etcd", Immutable, "HyperFleetEtcdConfig", false},
+		{"spec.etcd.managementType", Immutable, "", false},
 	}
 
 	for _, tt := range tests {
@@ -94,6 +99,9 @@ func TestValidation(t *testing.T) {
 		{
 			name: "valid - all visible fields have write mode",
 			content: `package test
+type Root struct {
+	Spec Spec ` + "`json:\"spec\"`" + `
+}
 type Spec struct {
 	// +hyperfleet:write-mode=mutable
 	Field string ` + "`json:\"field\"`" + `
@@ -103,6 +111,9 @@ type Spec struct {
 		{
 			name: "invalid - field has marker but missing write mode",
 			content: `package test
+type Root struct {
+	Spec Spec ` + "`json:\"spec\"`" + `
+}
 type Spec struct {
 	// +openshift:enable:FeatureGate=Test
 	Field string ` + "`json:\"field\"`" + `
@@ -112,6 +123,9 @@ type Spec struct {
 		{
 			name: "valid - hidden field without write mode is OK",
 			content: `package test
+type Root struct {
+	Spec Spec ` + "`json:\"spec\"`" + `
+}
 type Spec struct {
 	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set

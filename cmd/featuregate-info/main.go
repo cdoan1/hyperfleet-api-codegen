@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	fmt.Println("=== HyperFleet Feature Gate Registry ===\n")
+	fmt.Println("=== HyperFleet Feature Gate Registry ===")
+	fmt.Println()
 
 	// List all feature gates
 	fmt.Println("Registered Feature Gates:")
@@ -27,7 +28,8 @@ func main() {
 	}
 
 	fmt.Println()
-	fmt.Println("=== Feature Set Field Summary ===\n")
+	fmt.Println("=== Feature Set Field Summary ===")
+	fmt.Println()
 
 	featureSets := []featuregate.FeatureSet{
 		featuregate.Default,

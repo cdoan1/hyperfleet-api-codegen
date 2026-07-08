@@ -81,10 +81,23 @@ func (s *MarkerScanner) scanFile(file *ast.File) {
 		return true
 	})
 
-	// Second pass: process all structs
+	// Second pass: process only root types (Cluster, NodePool, etc.)
+	// Skip Spec/Status/Passthrough types as they'll be processed via recursion
 	for typeName, structType := range s.typeCache {
-		s.processStruct(typeName, structType, "")
+		if isRootType(typeName) {
+			s.processStruct(typeName, structType, "")
+		}
 	}
+}
+
+// isRootType returns true for top-level CRD types (not Spec/Status/Passthrough types)
+func isRootType(typeName string) bool {
+	// Root types don't have suffixes
+	return !strings.HasSuffix(typeName, "Spec") &&
+		!strings.HasSuffix(typeName, "Status") &&
+		!strings.HasSuffix(typeName, "List") &&
+		!strings.HasSuffix(typeName, "Passthrough") &&
+		typeName != "ClusterReference"
 }
 
 // processStruct walks struct fields and extracts markers
