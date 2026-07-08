@@ -77,15 +77,15 @@ Scan the example types and generate a field registry:
 ```bash
 # Simple example - 15 fields
 ./bin/marker-scanner \
-  -input-dirs=./examples/original \
-  -output-file=/tmp/field_metadata.go \
-  -verbose
+  --input-dirs=./examples/original \
+  --output-file=/tmp/field_metadata.go \
+  --verbose
 
 # Or realistic CRD example - 33 fields
 ./bin/marker-scanner \
-  -input-dirs=./examples/hypershift \
-  -output-file=/tmp/field_metadata.go \
-  -verbose
+  --input-dirs=./examples/hypershift \
+  --output-file=/tmp/field_metadata.go \
+  --verbose
 ```
 
 Output shows:
@@ -115,10 +115,10 @@ make generate-passthrough
 
 # Or use the CLI directly with import path
 ./bin/passthrough-gen \
-  -import-path=github.com/openshift/hypershift/api/hypershift/v1beta1 \
-  -output-dir=./api/v1alpha1 \
-  -types=HostedClusterSpec,NodePoolSpec \
-  -package=v1alpha1
+  --import-path=github.com/openshift/hypershift/api/hypershift/v1beta1 \
+  --output-dir=./api/v1alpha1 \
+  --types=HostedClusterSpec,NodePoolSpec \
+  --package=v1alpha1
 ```
 
 The `go.mod` currently pins HyperShift to v0.1.70 (baseline version). To bump:
@@ -143,10 +143,10 @@ make generate-passthrough-local HYPERSHIFT_DIR=$HYPERSHIFT_DIR
 
 # Or use the CLI directly with source-dir
 ./bin/passthrough-gen \
-  -source-dir=$HYPERSHIFT_DIR/api/hypershift/v1beta1 \
-  -output-dir=./api/v1alpha1 \
-  -types=HostedClusterSpec,NodePoolSpec \
-  -package=v1alpha1
+  --source-dir=$HYPERSHIFT_DIR/api/hypershift/v1beta1 \
+  --output-dir=./api/v1alpha1 \
+  --types=HostedClusterSpec,NodePoolSpec \
+  --package=v1alpha1
 ```
 
 See [docs/workflow.md](docs/workflow.md) for the complete three-stage pipeline.

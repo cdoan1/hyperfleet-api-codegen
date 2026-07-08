@@ -20,7 +20,7 @@ A compact, easy-to-understand example showing the basic envelope pattern:
 **Marker scanner results**: 15 total fields
 
 ```bash
-./bin/marker-scanner -input-dirs=examples/original -verbose
+./bin/marker-scanner --input-dirs=examples/original --verbose
 ```
 
 **Use this when**:
@@ -51,7 +51,7 @@ Complete, production-ready CRD examples showing real HyperFleet → HyperShift i
 **Marker scanner results**: 33 total fields
 
 ```bash
-./bin/marker-scanner -input-dirs=examples/hypershift -verbose
+./bin/marker-scanner --input-dirs=examples/hypershift --verbose
 ```
 
 **Use this when**:
@@ -98,13 +98,13 @@ Compare the two approaches:
 
 ```bash
 # Simple example - 15 fields
-./bin/marker-scanner -input-dirs=examples/original -verbose
+./bin/marker-scanner --input-dirs=examples/original --verbose
 
 # Realistic example - 33 fields  
-./bin/marker-scanner -input-dirs=examples/hypershift -verbose
+./bin/marker-scanner --input-dirs=examples/hypershift --verbose
 
 # Generated files only - 0 fields (skipped by design)
-./bin/marker-scanner -input-dirs=api/v1alpha1 -verbose
+./bin/marker-scanner --input-dirs=api/v1alpha1 --verbose
 ```
 
 ## Integration with Generated Code

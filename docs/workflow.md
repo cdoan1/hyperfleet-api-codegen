@@ -13,9 +13,10 @@ HyperShift CRDs → HyperFleet CRDs → OpenAPI + Field Registry
 
 **Tool**: `passthrough-gen`
 
-**Input**: HyperShift types from cloned repo
+**Input**: HyperShift types via go.mod (or from local clone)
 ```bash
-$HYPERSHIFT_DIR/api/hypershift/v1beta1/
+# Resolved from go.mod dependency:
+github.com/openshift/hypershift/api/hypershift/v1beta1
 ├── hostedcluster_types.go
 └── nodepool_types.go
 ```
@@ -25,13 +26,22 @@ $HYPERSHIFT_DIR/api/hypershift/v1beta1/
 ./api/v1alpha1/zz_generated.passthrough.go
 ```
 
-**Command**:
+**Command** (recommended - via go.mod):
 ```bash
 ./bin/passthrough-gen \
-  -source-dir=$HYPERSHIFT_DIR \
-  -types=HostedClusterSpec,NodePoolSpec \
-  -output-dir=./api/v1alpha1 \
-  -package=v1alpha1
+  --import-path=github.com/openshift/hypershift/api/hypershift/v1beta1 \
+  --types=HostedClusterSpec,NodePoolSpec \
+  --output-dir=./api/v1alpha1 \
+  --package=v1alpha1
+```
+
+**Alternative** (local clone):
+```bash
+./bin/passthrough-gen \
+  --source-dir=$HYPERSHIFT_DIR/api/hypershift/v1beta1 \
+  --types=HostedClusterSpec,NodePoolSpec \
+  --output-dir=./api/v1alpha1 \
+  --package=v1alpha1
 ```
 
 **What it does**:
@@ -80,9 +90,9 @@ type HostedClusterSpecPassthrough struct {
 **Command**:
 ```bash
 ./bin/marker-scanner \
-  -input-dirs=./api/v1alpha1 \
-  -output-file=./pkg/registry/field_metadata.go \
-  -verbose
+  --input-dirs=./api/v1alpha1 \
+  --output-file=./pkg/registry/field_metadata.go \
+  --verbose
 ```
 
 **What it does**:
@@ -122,10 +132,10 @@ var FieldRegistry = map[string]FieldMeta{
 **Command** (future production):
 ```bash
 ./bin/openapi-gen \
-  -input-dirs=./api/v1alpha1 \
-  -output-file=./openapi/openapi.json \
-  -title="HyperFleet API" \
-  -version=v1alpha1
+  --input-dirs=./api/v1alpha1 \
+  --output-file=./openapi/openapi.json \
+  --title="HyperFleet API" \
+  --version=v1alpha1
 ```
 
 **What it does** (when fully implemented):
@@ -154,19 +164,20 @@ var FieldRegistry = map[string]FieldMeta{
 
 ### Initial Setup (One Time)
 ```bash
-# 1. Clone HyperShift
-export HYPERSHIFT_DIR=/path/to/hypershift
-git clone https://github.com/openshift/hypershift $HYPERSHIFT_DIR
-
-# 2. Generate initial passthrough types using Makefile
-make generate-passthrough HYPERSHIFT_DIR=$HYPERSHIFT_DIR
+# 1. Generate initial passthrough types (uses go.mod dependency)
+make generate-passthrough
 
 # Or use the CLI directly
 ./bin/passthrough-gen \
-  -source-dir=$HYPERSHIFT_DIR/api/hypershift/v1beta1 \
-  -types=HostedClusterSpec,NodePoolSpec \
-  -output-dir=./api/v1alpha1 \
-  -package=v1alpha1
+  --import-path=github.com/openshift/hypershift/api/hypershift/v1beta1 \
+  --types=HostedClusterSpec,NodePoolSpec \
+  --output-dir=./api/v1alpha1 \
+  --package=v1alpha1
+
+# Alternative: Use local HyperShift clone
+export HYPERSHIFT_DIR=/path/to/hypershift
+git clone https://github.com/openshift/hypershift $HYPERSHIFT_DIR
+make generate-passthrough-local HYPERSHIFT_DIR=$HYPERSHIFT_DIR
 
 # 3. MANUAL: Create hand-written envelope types
 # See examples/hypershift/ for templates:
@@ -186,19 +197,19 @@ make generate-openapi
 
 ### HyperShift Version Bump (Ongoing)
 ```bash
-# 1. Update HyperShift dependency
-go get github.com/openshift/hypershift@v0.2.0
+# 1. Update HyperShift dependency (current baseline: v0.1.70)
+go get github.com/openshift/hypershift/api@v0.1.71
 go mod tidy
 
-# 2. Regenerate passthrough types using Makefile
-make generate-passthrough HYPERSHIFT_DIR=$HYPERSHIFT_DIR
+# 2. Regenerate passthrough types
+make generate-passthrough
 
 # Or use the CLI directly
 ./bin/passthrough-gen \
-  -source-dir=$HYPERSHIFT_DIR/api/hypershift/v1beta1 \
-  -types=HostedClusterSpec,NodePoolSpec \
-  -output-dir=./api/v1alpha1 \
-  -package=v1alpha1
+  --import-path=github.com/openshift/hypershift/api/hypershift/v1beta1 \
+  --types=HostedClusterSpec,NodePoolSpec \
+  --output-dir=./api/v1alpha1 \
+  --package=v1alpha1
 
 # 3. Review diff
 git diff api/v1alpha1/zz_generated.passthrough.go
@@ -251,21 +262,21 @@ make demo-passthrough
 
 # Scan markers from hand-written examples (finds 15 fields)
 ./bin/marker-scanner \
-  -input-dirs=./examples/original \
-  -output-file=/tmp/demo-registry.go \
-  -verbose
+  --input-dirs=./examples/original \
+  --output-file=/tmp/demo-registry.go \
+  --verbose
 
 # Or scan realistic CRD examples (finds 33 fields)
 ./bin/marker-scanner \
-  -input-dirs=./examples/hypershift \
-  -output-file=/tmp/demo-registry.go \
-  -verbose
+  --input-dirs=./examples/hypershift \
+  --output-file=/tmp/demo-registry.go \
+  --verbose
 
 # Generate OpenAPI (POC - minimal schema)
 ./bin/openapi-gen \
-  -output-file=/tmp/demo-openapi.json \
-  -title="HyperFleet Demo" \
-  -version=v1alpha1
+  --output-file=/tmp/demo-openapi.json \
+  --title="HyperFleet Demo" \
+  --version=v1alpha1
 ```
 
 See [examples/README.md](../examples/README.md) for details on the example sets.
@@ -295,8 +306,11 @@ The workflow is automated via Makefile targets:
 ### Available Targets
 
 ```bash
-# Generate passthrough types from HyperShift (requires HYPERSHIFT_DIR)
-make generate-passthrough HYPERSHIFT_DIR=/path/to/hypershift
+# Generate passthrough types from HyperShift (via go.mod, recommended)
+make generate-passthrough
+
+# Generate passthrough types from local HyperShift clone (legacy)
+make generate-passthrough-local HYPERSHIFT_DIR=/path/to/hypershift
 
 # Demo passthrough generation using examples (no HyperShift needed)
 make demo-passthrough
@@ -314,27 +328,30 @@ make generate
 ### Makefile Variables
 
 ```makefile
-# HyperShift source directory (can be overridden)
+# HyperShift configuration (go.mod approach, recommended)
+HYPERSHIFT_IMPORT_PATH ?= github.com/openshift/hypershift/api/hypershift/v1beta1
+HYPERSHIFT_TYPES ?= HostedClusterSpec,NodePoolSpec
+
+# Legacy: HyperShift source directory (deprecated)
 HYPERSHIFT_DIR ?= $(shell echo $$HYPERSHIFT_DIR)
 HYPERSHIFT_TYPES_DIR ?= $(HYPERSHIFT_DIR)/api/hypershift/v1beta1
-HYPERSHIFT_TYPES ?= HostedClusterSpec,NodePoolSpec
 
 # Directories
 API_DIR = api/v1alpha1
 PKG_DIR = pkg
 ```
 
-### Setting HYPERSHIFT_DIR
+### Using Local HyperShift Clone (Legacy)
 
 Option 1: Environment variable
 ```bash
 export HYPERSHIFT_DIR=/path/to/hypershift
-make generate-passthrough
+make generate-passthrough-local
 ```
 
 Option 2: Inline
 ```bash
-make generate-passthrough HYPERSHIFT_DIR=/path/to/hypershift
+make generate-passthrough-local HYPERSHIFT_DIR=/path/to/hypershift
 ```
 
 The Makefile automatically appends `/api/hypershift/v1beta1` to `HYPERSHIFT_DIR` to find the types.
