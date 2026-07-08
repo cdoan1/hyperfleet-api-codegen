@@ -123,6 +123,24 @@
         }
       }
     },
+    "HostedClusterSpecPassthrough": {
+      "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
+      "type": "object",
+      "required": [
+        "etcd",
+        "platform"
+      ],
+      "properties": {
+        "etcd": {
+          "description": "etcd specifies configuration for the control plane etcd cluster. The\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "object"
+        },
+        "platform": {
+          "description": "platform specifies the underlying infrastructure provider for the cluster\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "object"
+        }
+      }
+    },
     "NodePool": {
       "description": "NodePool represents a HyperFleet managed NodePool for a cluster\n+kubebuilder:object:root=true\n+kubebuilder:subresource:status\n+kubebuilder:resource:scope=Namespaced",
       "type": "object",
@@ -185,6 +203,10 @@
           "type": "object"
         }
       }
+    },
+    "NodePoolSpecPassthrough": {
+      "description": "NodePoolSpecPassthrough mirrors NodePoolSpec from upstream HyperShift",
+      "type": "object"
     },
     "NodePoolStatus": {
       "description": "NodePoolStatus defines the observed state of a NodePool",

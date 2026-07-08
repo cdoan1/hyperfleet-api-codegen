@@ -205,6 +205,26 @@ clean-generated: ## Clean generated code
 	rm -rf openapi/openapi.yaml
 	find $(API_DIR) -name 'zz_generated.*.go' -delete
 
+##@ Documentation
+
+.PHONY: serve-swagger-ui
+serve-swagger-ui: ## Serve Swagger UI locally (requires Python 3)
+	@echo "Starting local server for Swagger UI..."
+	@echo "Swagger UI will be available at: http://localhost:8080/swagger-ui/"
+	@echo "OpenAPI spec at: http://localhost:8080/openapi/openapi.json"
+	@echo ""
+	@echo "Press Ctrl+C to stop the server"
+	@echo ""
+	@command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required but not installed"; exit 1; }
+	@cd .. && python3 -m http.server 8080 --directory $(shell pwd)
+
+.PHONY: open-swagger-ui
+open-swagger-ui: ## Open Swagger UI in browser (may need serve-swagger-ui running)
+	@echo "Opening Swagger UI in browser..."
+	@command -v open >/dev/null 2>&1 && open http://localhost:8080/swagger-ui/ || \
+	command -v xdg-open >/dev/null 2>&1 && xdg-open http://localhost:8080/swagger-ui/ || \
+	echo "Please open http://localhost:8080/swagger-ui/ in your browser"
+
 ##@ CI
 
 .PHONY: ci-verify

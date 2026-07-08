@@ -159,6 +159,29 @@ make generate-passthrough-local HYPERSHIFT_DIR=$HYPERSHIFT_DIR
 
 See [docs/workflow.md](docs/workflow.md) for the complete three-stage pipeline.
 
+### Browse the API with Swagger UI
+
+View interactive API documentation:
+
+```bash
+# Generate the OpenAPI schema
+make generate-openapi
+
+# Start Swagger UI server
+make serve-swagger-ui
+
+# Open in browser (in another terminal, or visit http://localhost:8080/swagger-ui/)
+make open-swagger-ui
+```
+
+The Swagger UI provides:
+- Interactive browsing of all HyperFleet types
+- Schema details with field descriptions
+- Model explorer to expand/collapse definitions
+- Filter and search capabilities
+
+See [swagger-ui/README.md](swagger-ui/README.md) for more details.
+
 ## Project Status
 
 🚧 **Proof of Concept** - Active development
