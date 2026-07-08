@@ -9,16 +9,17 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	// Point to cloned HyperShift repo
-	sourceDir := "/Users/cdoan/workspace/src/github.com/openshift/hypershift/api/hypershift/v1beta1"
-
-	gen := NewGenerator(
-		sourceDir,
+	// Create generator from import path (resolves via go.mod)
+	gen, err := NewGeneratorFromImportPath(
+		"github.com/openshift/hypershift/api/hypershift/v1beta1",
 		[]string{"HostedClusterSpec"},
 		make(markers.FieldRegistry),
 	)
+	if err != nil {
+		t.Fatalf("Failed to create generator: %v", err)
+	}
 
-	if err := gen.LoadSourceFiles(sourceDir); err != nil {
+	if err := gen.LoadSourceFiles(gen.SourceDir); err != nil {
 		t.Fatalf("Failed to load source files: %v", err)
 	}
 
