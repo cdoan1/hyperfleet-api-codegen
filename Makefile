@@ -117,18 +117,6 @@ manifests: $(CONTROLLER_GEN) ## Generate CRD manifests
 .PHONY: generate
 generate: generate-registry generate-passthrough manifests generate-openapi ## Run all code generators
 
-.PHONY: demo-passthrough
-demo-passthrough: $(PASSTHROUGH_GEN) ## Demo: Generate passthrough types to /tmp (no HYPERSHIFT_DIR needed)
-	@echo "Running passthrough-gen demo with examples..."
-	@mkdir -p /tmp/demo-output
-	$(PASSTHROUGH_GEN) \
-		--source-dir=./examples \
-		--types=ClusterSpec,HostedClusterPassthrough \
-		--output-dir=/tmp/demo-output \
-		--package=demo
-	@echo "Demo output generated at /tmp/demo-output"
-	@ls -lh /tmp/demo-output
-
 .PHONY: test-hypershift-integration
 test-hypershift-integration: $(PASSTHROUGH_GEN) ## Test: Generate from HyperShift via go.mod to test-output/
 	@echo "Testing passthrough generation from HyperShift v0.1.70 (via go.mod)..."

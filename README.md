@@ -72,38 +72,24 @@ This builds:
 
 ### Try the Marker Scanner
 
-Scan the example types and generate a field registry:
+Scan the actual HyperFleet API types and generate a field registry:
 
 ```bash
-# Simple example - 15 fields
+# Scan current API types (214 fields: 18 mutable, 196 service-set, 26 visible)
 ./bin/marker-scanner \
-  --input-dirs=./examples/original \
-  --output-file=/tmp/field_metadata.go \
-  --verbose
-
-# Or realistic CRD example - 33 fields
-./bin/marker-scanner \
-  --input-dirs=./examples/hypershift \
+  --input-dirs=./api/v1alpha1 \
   --output-file=/tmp/field_metadata.go \
   --verbose
 ```
 
 Output shows:
-- Table of all fields with their markers
+- Table of all fields with their markers and visibility
 - Summary statistics (mutable/immutable/service-set counts)
-- Generated registry file location
+- Visibility breakdown (visible vs hidden fields)
 
-See [examples/README.md](examples/README.md) for details on the two example sets.
+For teaching examples, see [examples/README.md](examples/README.md) which has simple demonstration types.
 
 ### Try the Passthrough Generator
-
-**Quick demo using built-in examples** (no HyperShift needed):
-
-```bash
-make demo-passthrough
-```
-
-This generates passthrough types from `examples/original/` to `/tmp/demo-output`.
 
 **Test HyperShift integration** (uses go.mod dependency):
 
@@ -113,48 +99,39 @@ make test-hypershift-integration
 
 This generates passthrough types from HyperShift v0.1.70 (resolved via go.mod) to `test-output/`. This demonstrates the complete workflow without requiring a local HyperShift clone.
 
-**Generate from HyperShift via go.mod (recommended):**
+**Production workflow: Generate and curate HyperShift types**
 
-The passthrough generator can resolve HyperShift types directly from the go.mod dependency:
+The passthrough generator creates HyperFleet wrappers from upstream HyperShift types:
 
 ```bash
-# Using Makefile (imports github.com/openshift/hypershift/api@v0.1.70)
+# Generate passthrough types from HyperShift v0.1.70 (via go.mod)
 make generate-passthrough
 
-# Or use the CLI directly with import path
-./bin/passthrough-gen \
-  --import-path=github.com/openshift/hypershift/api/hypershift/v1beta1 \
-  --output-dir=./api/v1alpha1 \
-  --types=HostedClusterSpec,NodePoolSpec \
-  --package=v1alpha1
+# This creates api/v1alpha1/hostedclusterspec.passthrough.go
+# All fields start hidden (+k8s:openapi-gen=false) with safe defaults
 ```
 
-The `go.mod` currently pins HyperShift to v0.1.70 (baseline version). To bump:
+**Field curation workflow:**
+
+1. Edit `api/v1alpha1/hostedclusterspec.passthrough.go`
+2. Remove `+k8s:openapi-gen=false` from fields you want to expose
+3. Regenerate field registry and OpenAPI:
+   ```bash
+   make generate-registry generate-openapi
+   ```
+
+Currently exposed fields: `etcd`, `platform`, `controlPlaneRelease`, `kubeAPIServerDNSName`
+
+**Bumping HyperShift version:**
 
 ```bash
-# Update to a specific version
+# Update to a newer version
 go get github.com/openshift/hypershift/api@v0.1.71
 
-# Then regenerate
+# Regenerate passthrough types
 make generate-passthrough
-```
 
-**Alternative: Generate from local HyperShift clone:**
-
-```bash
-# First, clone HyperShift
-export HYPERSHIFT_DIR=/path/to/hypershift
-git clone https://github.com/openshift/hypershift $HYPERSHIFT_DIR
-
-# Then generate using Makefile
-make generate-passthrough-local HYPERSHIFT_DIR=$HYPERSHIFT_DIR
-
-# Or use the CLI directly with source-dir
-./bin/passthrough-gen \
-  --source-dir=$HYPERSHIFT_DIR/api/hypershift/v1beta1 \
-  --output-dir=./api/v1alpha1 \
-  --types=HostedClusterSpec,NodePoolSpec \
-  --package=v1alpha1
+# Review new/changed fields and update markers as needed
 ```
 
 See [docs/workflow.md](docs/workflow.md) for the complete three-stage pipeline.
@@ -187,15 +164,24 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 🚧 **Proof of Concept** - Active development
 
 **Completed:**
-- ✅ Marker scanner with field registry generator ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
-- ✅ Passthrough type generator ([ROSAENG-61384](https://redhat.atlassian.net/browse/ROSAENG-61384))
-- ✅ OpenAPI integration POC ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
+- ✅ Marker scanner with field registry generator - 214 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
+- ✅ Passthrough type generator - go.mod-based with proper imports ([ROSAENG-61384](https://redhat.atlassian.net/browse/ROSAENG-61384))
+- ✅ OpenAPI generator with $ref support - proper type expansion ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
+- ✅ Swagger UI integration - interactive API documentation
+- ✅ Production workflow validated - field curation and marker-based visibility
+
+**What Works:**
+- Generate passthrough types from HyperShift v0.1.70
+- All fields start hidden (safe defaults)
+- Developers curate which fields to expose
+- Field metadata registry tracks all 214 fields
+- OpenAPI schema properly expands nested types with $ref
+- Swagger UI allows interactive browsing
 
 **Future Work:**
-- Full openapi-gen integration (current POC generates minimal schema)
-- Marker preservation from field registry during passthrough regeneration
 - Feature gate tooling and CRD variant generation
-- Auto-generated type conversion functions
+- Auto-generated type conversion functions (CRD ↔ REST)
+- Runtime validation using field metadata registry
 
 See [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383) for full implementation tracking.
 
@@ -216,9 +202,9 @@ make all
 
 **Current test coverage:**
 - `pkg/markers`: 63.4%
-- `pkg/passthrough`: 78.3%
+- `pkg/passthrough`: 82.8%
 - `pkg/openapi`: 70.0%
-- **Overall**: 73%
+- **Overall**: 75%
 
 ## Related Projects
 
