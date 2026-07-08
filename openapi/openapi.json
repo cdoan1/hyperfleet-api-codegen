@@ -1,0 +1,222 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "OpenAPI schema for HyperFleet API generated from Go types with markers\n\nFields marked with +k8s:openapi-gen=false are excluded from this schema.",
+    "title": "HyperFleet API",
+    "version": "v1alpha1"
+  },
+  "paths": {},
+  "definitions": {
+    "Cluster": {
+      "description": "Cluster represents a HyperFleet managed OpenShift cluster\n+kubebuilder:object:root=true\n+kubebuilder:subresource:status\n+kubebuilder:resource:scope=Namespaced",
+      "type": "object",
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "spec": {
+          "type": "object"
+        },
+        "status": {
+          "type": "object"
+        }
+      }
+    },
+    "ClusterList": {
+      "description": "ClusterList contains a list of Clusters\n+kubebuilder:object:root=true",
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ClusterReference": {
+      "description": "ClusterReference identifies the parent cluster",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "description": "Name is the name of the Cluster resource\n+kubebuilder:validation:Required",
+          "type": "string"
+        },
+        "namespace": {
+          "description": "Namespace is the namespace of the Cluster resource\nIf empty, defaults to the same namespace as this NodePool",
+          "type": "string"
+        }
+      }
+    },
+    "ClusterSpec": {
+      "description": "ClusterSpec defines the desired state of a Cluster",
+      "type": "object",
+      "required": [
+        "hostedCluster"
+      ],
+      "properties": {
+        "deleteProtection": {
+          "description": "DeleteProtection prevents accidental deletion when enabled\n+hyperfleet:write-mode=mutable",
+          "type": "boolean"
+        },
+        "displayName": {
+          "description": "DisplayName is a human-readable name for the cluster\n+hyperfleet:write-mode=mutable\n+kubebuilder:validation:MaxLength=256",
+          "type": "string"
+        },
+        "expirationTimestamp": {
+          "description": "ExpirationTimestamp marks when this cluster should be automatically deleted\n+hyperfleet:write-mode=mutable",
+          "type": "object"
+        },
+        "hostedCluster": {
+          "description": "HostedCluster contains the full HyperShift HostedCluster configuration\nAll fields are generated from upstream and have safe defaults (hidden + service-set)\nuntil explicitly reviewed and exposed\n+kubebuilder:validation:Required",
+          "type": "object"
+        },
+        "properties": {
+          "description": "Properties are arbitrary key-value pairs for customer metadata\n+hyperfleet:write-mode=mutable",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ClusterStatus": {
+      "description": "ClusterStatus defines the observed state of a Cluster",
+      "type": "object",
+      "properties": {
+        "apiEndpoint": {
+          "description": "APIEndpoint is the cluster API server endpoint",
+          "type": "string"
+        },
+        "conditions": {
+          "description": "Conditions represent detailed cluster status",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "consoleUrl": {
+          "description": "ConsoleURL is the web console URL",
+          "type": "string"
+        },
+        "provisionStartTime": {
+          "description": "ProvisionStartTime is when provisioning began",
+          "type": "object"
+        },
+        "readyTime": {
+          "description": "ReadyTime is when the cluster became ready",
+          "type": "object"
+        },
+        "state": {
+          "description": "State represents the high-level cluster state\n+kubebuilder:validation:Enum=pending;provisioning;ready;degraded;deleting;failed",
+          "type": "string"
+        },
+        "version": {
+          "description": "Version is the observed OpenShift version",
+          "type": "string"
+        }
+      }
+    },
+    "NodePool": {
+      "description": "NodePool represents a HyperFleet managed NodePool for a cluster\n+kubebuilder:object:root=true\n+kubebuilder:subresource:status\n+kubebuilder:resource:scope=Namespaced",
+      "type": "object",
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "spec": {
+          "type": "object"
+        },
+        "status": {
+          "type": "object"
+        }
+      }
+    },
+    "NodePoolList": {
+      "description": "NodePoolList contains a list of NodePools\n+kubebuilder:object:root=true",
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "NodePoolSpec": {
+      "description": "NodePoolSpec defines the desired state of a NodePool",
+      "type": "object",
+      "required": [
+        "clusterRef",
+        "nodePool"
+      ],
+      "properties": {
+        "autoRepair": {
+          "description": "AutoRepair enables automatic repair of unhealthy nodes\n+hyperfleet:write-mode=mutable",
+          "type": "boolean"
+        },
+        "clusterRef": {
+          "description": "ClusterRef references the parent Cluster\n+kubebuilder:validation:Required",
+          "type": "object"
+        },
+        "displayName": {
+          "description": "DisplayName is a human-readable name for the node pool\n+hyperfleet:write-mode=mutable",
+          "type": "string"
+        },
+        "labels": {
+          "description": "Labels to apply to nodes in this pool\n+hyperfleet:write-mode=mutable",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "nodePool": {
+          "description": "NodePool contains the full HyperShift NodePool configuration\nAll fields are generated from upstream and have safe defaults (hidden + service-set)\n+kubebuilder:validation:Required",
+          "type": "object"
+        }
+      }
+    },
+    "NodePoolStatus": {
+      "description": "NodePoolStatus defines the observed state of a NodePool",
+      "type": "object",
+      "properties": {
+        "availableReplicas": {
+          "description": "AvailableReplicas is the number of available nodes",
+          "type": "integer",
+          "format": "int32"
+        },
+        "conditions": {
+          "description": "Conditions represent detailed node pool status",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "readyReplicas": {
+          "description": "ReadyReplicas is the number of ready nodes",
+          "type": "integer",
+          "format": "int32"
+        },
+        "replicas": {
+          "description": "Replicas is the current number of nodes",
+          "type": "integer",
+          "format": "int32"
+        },
+        "state": {
+          "description": "State represents the high-level node pool state\n+kubebuilder:validation:Enum=pending;scaling;ready;degraded;deleting;failed",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

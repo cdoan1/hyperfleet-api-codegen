@@ -12,7 +12,8 @@ func TestGenerate(t *testing.T) {
 	tmpFile := "/tmp/openapi-test.json"
 	defer func() { _ = os.Remove(tmpFile) }()
 
-	gen := NewGenerator([]string{"./test"}, tmpFile)
+	// Test with no input dirs (POC mode)
+	gen := NewGenerator(nil, tmpFile)
 	gen.Title = "Test API"
 	gen.Version = "v1"
 

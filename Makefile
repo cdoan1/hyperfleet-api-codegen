@@ -101,8 +101,13 @@ generate-passthrough-local: $(PASSTHROUGH_GEN) ## Generate passthrough types fro
 
 .PHONY: generate-openapi
 generate-openapi: $(OPENAPI_GEN) ## Generate OpenAPI schema from Go types
-	@echo "Generating OpenAPI schema..."
-	$(OPENAPI_GEN) --input-dirs=$(API_DIR) --output-file=openapi/openapi.yaml
+	@echo "Generating OpenAPI schema from $(API_DIR)..."
+	@mkdir -p openapi
+	$(OPENAPI_GEN) \
+		--input-dirs=$(API_DIR) \
+		--output-file=openapi/openapi.json \
+		--title="HyperFleet API" \
+		--version=v1alpha1
 
 .PHONY: manifests
 manifests: $(CONTROLLER_GEN) ## Generate CRD manifests
