@@ -173,50 +173,6 @@ func (g *Generator) scanTypes() (spec.Definitions, map[string]bool, error) {
 	return definitions, typeNames, nil
 }
 
-// processFile processes a single Go source file
-func (g *Generator) processFile(file *ast.File, definitions spec.Definitions, typeNames map[string]bool) error {
-	// Find all type declarations
-	for _, decl := range file.Decls {
-		genDecl, ok := decl.(*ast.GenDecl)
-		if !ok || genDecl.Tok != token.TYPE {
-			continue
-		}
-
-		for _, spec := range genDecl.Specs {
-			typeSpec, ok := spec.(*ast.TypeSpec)
-			if !ok {
-				continue
-			}
-
-			// Only process exported struct types
-			if !typeSpec.Name.IsExported() {
-				continue
-			}
-
-			structType, ok := typeSpec.Type.(*ast.StructType)
-			if !ok {
-				continue
-			}
-
-			// Track this type name
-			typeName := typeSpec.Name.Name
-			typeNames[typeName] = true
-
-			// Generate OpenAPI schema for this type
-			schema, err := g.generateSchema(typeName, structType, genDecl.Doc)
-			if err != nil {
-				return fmt.Errorf("generating schema for %s: %w", typeName, err)
-			}
-
-			if schema != nil {
-				definitions[typeName] = *schema
-			}
-		}
-	}
-
-	return nil
-}
-
 // generateSchema generates an OpenAPI schema for a struct type
 func (g *Generator) generateSchema(typeName string, structType *ast.StructType, doc *ast.CommentGroup) (*spec.Schema, error) {
 	schema := &spec.Schema{

@@ -160,6 +160,45 @@ Output shows:
 
 Example: A field marked `+openshift:enable:FeatureGate=HyperFleetAutoScaling` (TechPreview) is visible in TechPreview and DevPreview feature sets, but hidden in Default.
 
+### Runtime Validation
+
+Validate API requests using the field metadata registry:
+
+```go
+import (
+    "github.com/cdoan1/hyperfleet-api-codegen/pkg/validation"
+    "github.com/cdoan1/hyperfleet-api-codegen/pkg/featuregate"
+)
+
+// Create validator
+v := validation.NewValidator()
+
+// Validate a create request
+req := &validation.Request{
+    Operation: validation.OperationCreate,
+    Fields: map[string]any{
+        "spec.displayName": "my-cluster",
+        "spec.tags":        map[string]string{"env": "prod"}, // Gated field
+    },
+    FeatureSet: featuregate.TechPreviewNoUpgrade,
+}
+
+if err := v.Validate(req); err != nil {
+    // Returns errors for:
+    // - Service-set fields (customer cannot set)
+    // - Feature-gated fields (customer lacks entitlement)
+    // - Immutable fields being changed on update
+    log.Fatalf("Validation failed: %v", err)
+}
+```
+
+The validator enforces:
+- **Write mode rules**: service-set fields rejected, immutable fields can't change on update
+- **Feature gate entitlements**: gated fields only accessible to customers with correct feature set
+- **Generic validation**: No field-specific code, scales to hundreds of fields
+
+See [pkg/validation/example_test.go](pkg/validation/example_test.go) for more examples.
+
 ### Browse the API with Swagger UI
 
 View interactive API documentation:
@@ -188,27 +227,28 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 🚧 **Proof of Concept** - Active development
 
 **Completed:**
-- ✅ Marker scanner with field registry generator - 217 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
+- ✅ Marker scanner with field registry generator - 58 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
 - ✅ Passthrough type generator - go.mod-based with proper imports ([ROSAENG-61384](https://redhat.atlassian.net/browse/ROSAENG-61384))
 - ✅ OpenAPI generator with $ref support - proper type expansion ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
 - ✅ Swagger UI integration - interactive API documentation
 - ✅ Production workflow validated - field curation and marker-based visibility
 - ✅ Feature gate tooling - registry, filtering, and per-feature-set field counts
+- ✅ Runtime validation - generic enforcement of write-mode and feature gate rules
 
 **What Works:**
 - Generate passthrough types from HyperShift v0.1.70
 - All fields start hidden (safe defaults)
 - Developers curate which fields to expose
-- Field metadata registry tracks all 217 fields (3 feature-gated)
+- Field metadata registry tracks all 58 fields (3 feature-gated)
 - Feature gate registry with 4 example gates (1 GA, 2 TechPreview, 1 DevPreview)
 - Per-feature-set field filtering (Default: 32 fields, TechPreview: 35 fields)
 - OpenAPI schema properly expands nested types with $ref
 - Swagger UI allows interactive browsing
+- Runtime validation enforces write-mode (mutable/immutable/service-set) and feature gates
 
 **Future Work:**
 - CRD variant generator (filter CRD YAML by feature set)
 - Auto-generated type conversion functions (CRD ↔ REST)
-- Runtime validation using field metadata registry
 
 See [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383) for full implementation tracking.
 

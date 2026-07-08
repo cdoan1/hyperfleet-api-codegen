@@ -43,24 +43,25 @@ See `docs/api-management.md` for complete design specification.
 
 **Completed:**
 1. ✅ Go module setup
-2. ✅ Marker scanner and field registry generator (ROSAENG-61389) - 217 fields tracked with write-mode and feature gates
+2. ✅ Marker scanner and field registry generator (ROSAENG-61389) - 58 fields tracked with write-mode and feature gates
 3. ✅ Passthrough generator (ROSAENG-61384) - go.mod-based with proper type qualification
 4. ✅ OpenAPI integration (ROSAENG-61387) - full generator with $ref support for type expansion
 5. ✅ Feature gate tooling - registry, filtering, and per-feature-set field counts
 6. ✅ Swagger UI - interactive API documentation
+7. ✅ Runtime validation - generic enforcement using field metadata registry
 
 **What Works:**
 - Three control markers: visibility, write-mode, feature gates
-- Field metadata registry with 217 fields (3 feature-gated)
+- Field metadata registry with 58 fields (3 feature-gated)
 - Feature gate registry with 4 example gates (1 GA, 2 TechPreview, 1 DevPreview)
 - Per-feature-set filtering: Default (32 fields), TechPreview (35 fields), DevPreview (35 fields)
 - OpenAPI schema generation with proper $ref expansion
 - Production workflow validated: field curation, marker-based visibility
+- Runtime validation enforces write-mode and feature gate rules with no field-specific code
 
 **Remaining:**
 - CRD variant generator (filter CRD YAML by feature set)
 - Type conversion functions (CRD ↔ REST)
-- Runtime validation using field metadata registry
 
 ## Key Concepts
 
