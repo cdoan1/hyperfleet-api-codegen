@@ -86,15 +86,8 @@ jobs:
             exit 1
           )
 
-      - name: Verify all passthrough fields have markers
-        run: |
-          # Check that all fields in passthrough files have required markers
-          if grep -r "json:" api/v1alpha1/*passthrough.go | grep -v "+k8s:openapi-gen" | grep -v "+hyperfleet:write-mode"; then
-            echo "Error: Some passthrough fields are missing required markers"
-            echo "All fields must have +k8s:openapi-gen and +hyperfleet:write-mode markers"
-            exit 1
-          fi
-          echo "✓ All passthrough fields have required markers"
+      # Note: Marker validation is done by the marker-scanner --validate flag above
+      # which properly parses Go AST to verify visible fields have write-mode markers
 
   build:
     name: Build
