@@ -28,9 +28,13 @@ Platform API (OpenAPI spec + field metadata registry)
 
 ### Three Control Markers
 
-1. **Visibility** (`+k8s:openapi-gen=false`) - Controls whether a field appears in OpenAPI
-2. **Write Mode** (`+hyperfleet:write-mode=X`) - Controls customer mutability (mutable/immutable/service-set)
-3. **Feature Gate** (`+openshift:enable:FeatureGate=X`) - Controls per-customer entitlements
+Go markers on fields control visibility, mutability, and entitlements:
+
+| Marker | Purpose | Values |
+|--------|---------|--------|
+| `+k8s:openapi-gen=false` | **Visibility** - Controls whether field appears in OpenAPI schema | `true` (visible, default) / `false` (hidden) |
+| `+hyperfleet:write-mode=X` | **Write Mode** - Controls customer mutability | `mutable` / `immutable` / `service-set` |
+| `+openshift:enable:FeatureGate=X` | **Feature Gate** - Controls per-customer entitlements | Feature set name (e.g., `TechPreviewNoUpgrade`) |
 
 ## Documentation
 
