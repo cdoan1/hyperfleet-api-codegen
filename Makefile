@@ -15,7 +15,9 @@ PKG_DIR=pkg
 CMD_DIR=cmd
 
 # HyperShift source directory (can be overridden via environment variable)
+# Should point to the root of the HyperShift repo, types are in api/hypershift/v1beta1/
 HYPERSHIFT_DIR ?= $(shell echo $$HYPERSHIFT_DIR)
+HYPERSHIFT_TYPES_DIR ?= $(HYPERSHIFT_DIR)/api/hypershift/v1beta1
 HYPERSHIFT_TYPES ?= HostedClusterSpec,NodePoolSpec
 
 # Tools
@@ -77,9 +79,9 @@ generate-passthrough: $(PASSTHROUGH_GEN) ## Generate passthrough types from Hype
 		echo "  make generate-passthrough HYPERSHIFT_DIR=/path/to/hypershift"; \
 		exit 1; \
 	fi
-	@echo "Generating passthrough types from $(HYPERSHIFT_DIR)..."
+	@echo "Generating passthrough types from $(HYPERSHIFT_TYPES_DIR)..."
 	$(PASSTHROUGH_GEN) \
-		--source-dir=$(HYPERSHIFT_DIR) \
+		--source-dir=$(HYPERSHIFT_TYPES_DIR) \
 		--types=$(HYPERSHIFT_TYPES) \
 		--output-dir=$(API_DIR) \
 		--package=v1alpha1
