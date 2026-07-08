@@ -53,8 +53,12 @@ func main() {
 	registry := make(markers.FieldRegistry)
 	if registryFile != "" {
 		log.Printf("Loading field registry from: %s", registryFile)
-		// TODO: Implement registry loading from file
-		// For now, just use empty registry
+		var err error
+		registry, err = markers.LoadRegistryFromJSON(registryFile)
+		if err != nil {
+			log.Fatalf("Failed to load registry: %v", err)
+		}
+		log.Printf("Loaded %d field markers from registry", len(registry))
 	}
 
 	// Create generator

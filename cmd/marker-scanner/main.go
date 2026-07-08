@@ -72,6 +72,15 @@ func main() {
 
 	fmt.Printf("Successfully generated field registry at %s\n", outputFile)
 
+	// Also generate JSON file for use by other tools
+	jsonFile := strings.TrimSuffix(outputFile, ".go") + ".json"
+	log.Printf("Generating JSON registry: %s", jsonFile)
+	if err := scanner.GenerateJSON(jsonFile); err != nil {
+		log.Fatalf("Error generating JSON registry: %v", err)
+	}
+
+	fmt.Printf("Successfully generated JSON registry at %s\n", jsonFile)
+
 	// Show what was generated if verbose
 	if verbose {
 		fmt.Println()

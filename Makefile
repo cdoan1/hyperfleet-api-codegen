@@ -76,11 +76,23 @@ generate-registry: $(MARKER_SCANNER) ## Generate field metadata registry from Go
 .PHONY: generate-passthrough
 generate-passthrough: $(PASSTHROUGH_GEN) ## Generate passthrough types from HyperShift (via go.mod)
 	@echo "Generating passthrough types from $(HYPERSHIFT_IMPORT_PATH)..."
-	$(PASSTHROUGH_GEN) \
-		--import-path=$(HYPERSHIFT_IMPORT_PATH) \
-		--types=$(HYPERSHIFT_TYPES) \
-		--output-dir=$(API_DIR) \
-		--package=v1alpha1
+	@# Use existing registry if it exists to preserve markers
+	@if [ -f "$(PKG_DIR)/registry/field_metadata.json" ]; then \
+		echo "Using existing field registry to preserve markers..."; \
+		$(PASSTHROUGH_GEN) \
+			--import-path=$(HYPERSHIFT_IMPORT_PATH) \
+			--types=$(HYPERSHIFT_TYPES) \
+			--output-dir=$(API_DIR) \
+			--package=v1alpha1 \
+			--registry=$(PKG_DIR)/registry/field_metadata.json; \
+	else \
+		echo "No existing registry found, using safe defaults..."; \
+		$(PASSTHROUGH_GEN) \
+			--import-path=$(HYPERSHIFT_IMPORT_PATH) \
+			--types=$(HYPERSHIFT_TYPES) \
+			--output-dir=$(API_DIR) \
+			--package=v1alpha1; \
+	fi
 
 .PHONY: generate-passthrough-local
 generate-passthrough-local: $(PASSTHROUGH_GEN) ## Generate passthrough types from local HyperShift clone (requires HYPERSHIFT_DIR)
