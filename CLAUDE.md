@@ -41,13 +41,26 @@ See `docs/api-management.md` for complete design specification.
 
 🚧 **Proof of Concept** - Active development tracked in [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383)
 
-Implementation order per CONTEXT.md:
-1. Go module setup
-2. Marker scanner and field registry generator (ROSAENG-61389) - provides marker preservation mechanism
-3. Passthrough generator (ROSAENG-61384) - uses field registry to preserve markers across regenerations
-4. kube-openapi integration (ROSAENG-61387) - validates markers work end-to-end
+**Completed:**
+1. ✅ Go module setup
+2. ✅ Marker scanner and field registry generator (ROSAENG-61389) - 217 fields tracked with write-mode and feature gates
+3. ✅ Passthrough generator (ROSAENG-61384) - go.mod-based with proper type qualification
+4. ✅ OpenAPI integration (ROSAENG-61387) - full generator with $ref support for type expansion
+5. ✅ Feature gate tooling - registry, filtering, and per-feature-set field counts
+6. ✅ Swagger UI - interactive API documentation
 
-Full story breakdown in CONTEXT.md lines 66-118.
+**What Works:**
+- Three control markers: visibility, write-mode, feature gates
+- Field metadata registry with 217 fields (3 feature-gated)
+- Feature gate registry with 4 example gates (1 GA, 2 TechPreview, 1 DevPreview)
+- Per-feature-set filtering: Default (32 fields), TechPreview (35 fields), DevPreview (35 fields)
+- OpenAPI schema generation with proper $ref expansion
+- Production workflow validated: field curation, marker-based visibility
+
+**Remaining:**
+- CRD variant generator (filter CRD YAML by feature set)
+- Type conversion functions (CRD ↔ REST)
+- Runtime validation using field metadata registry
 
 ## Key Concepts
 
@@ -108,9 +121,10 @@ The passthrough generator resolves HyperShift types via go.mod (no local clone n
 Current baseline: HyperShift v0.1.70
 
 **Feature gate promotion:**
-1. Update gate stage in feature gate registry (e.g., TechPreview → GA)
-2. Run `make manifests` to regenerate CRD variants
-3. Remove gate marker from fields or leave for historical tracking
+1. Update gate stage in `pkg/featuregate/registry.go` (e.g., TechPreview → GA)
+2. Run `make featuregate-info` to verify change
+3. Optionally remove gate markers from fields (now always enabled)
+4. Run `make generate-registry` to update field metadata
 
 **Adding new markers to existing fields:**
 1. Edit Go type definitions in `api/v1alpha1/`

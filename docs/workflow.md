@@ -226,6 +226,83 @@ make generate-registry
 make generate-openapi
 ```
 
+### Feature Gate Management
+
+Feature gates control which fields are available to different customer tiers.
+
+**View current feature gates:**
+```bash
+make featuregate-info
+```
+
+Output shows:
+- All registered gates with their stages (GA, TechPreview, DevPreview)
+- Field counts per feature set
+- Which gates are enabled in each feature set
+
+**Add a feature-gated field:**
+
+1. Edit your type definition (e.g., `api/v1alpha1/cluster_types.go`):
+   ```go
+   // Tags are customer-defined labels (TechPreview feature)
+   // +hyperfleet:write-mode=mutable
+   // +openshift:enable:FeatureGate=HyperFleetAutoScaling
+   Tags map[string]string `json:"tags,omitempty"`
+   ```
+
+2. Register the gate in `pkg/featuregate/registry.go`:
+   ```go
+   var HyperFleetFeatureGates = map[string]FeatureGateInfo{
+       "HyperFleetAutoScaling": {
+           Stage:       TechPreview,
+           Description: "Enables cluster autoscaling configuration",
+       },
+   }
+   ```
+
+3. Regenerate field registry:
+   ```bash
+   make generate-registry
+   ```
+
+4. Verify field appears in correct feature sets:
+   ```bash
+   make featuregate-info
+   # Output will show field counts:
+   #   Default: 32 fields (gate disabled)
+   #   TechPreview: 35 fields (gate enabled)
+   ```
+
+**Promote a gate from TechPreview to GA:**
+
+1. Edit `pkg/featuregate/registry.go`:
+   ```go
+   "HyperFleetAutoScaling": {
+       Stage: GA,  // Changed from TechPreview
+       Description: "Enables cluster autoscaling configuration",
+   },
+   ```
+
+2. Optionally remove the gate marker from fields (now always enabled):
+   ```go
+   // Gate marker can be removed or kept for historical tracking
+   // +hyperfleet:write-mode=mutable
+   // +openshift:enable:FeatureGate=HyperFleetAutoScaling  // Can remove this line
+   Tags map[string]string `json:"tags,omitempty"`
+   ```
+
+3. Regenerate:
+   ```bash
+   make featuregate-info  # Verify gate is now GA
+   ```
+
+**Feature Set Hierarchy:**
+- **Default** - GA features only (production-ready)
+- **TechPreviewNoUpgrade** - GA + TechPreview features (customers cannot upgrade)
+- **DevPreviewNoUpgrade** - GA + TechPreview + DevPreview features (development/testing)
+
+The hierarchy is inclusive: DevPreview ⊃ TechPreview ⊃ Default
+
 ## Key Points
 
 ### 1. Two Types of Types
