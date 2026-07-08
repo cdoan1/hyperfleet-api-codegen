@@ -14,6 +14,10 @@ API_DIR=api/v1alpha1
 PKG_DIR=pkg
 CMD_DIR=cmd
 
+# HyperShift source directory (can be overridden via environment variable)
+HYPERSHIFT_DIR ?= $(shell echo $$HYPERSHIFT_DIR)
+HYPERSHIFT_TYPES ?= HostedClusterSpec,NodePoolSpec
+
 # Tools
 CONTROLLER_GEN ?= $(shell pwd)/bin/controller-gen
 MARKER_SCANNER ?= $(shell pwd)/bin/marker-scanner
@@ -65,8 +69,20 @@ generate-registry: $(MARKER_SCANNER) ## Generate field metadata registry from Go
 
 .PHONY: generate-passthrough
 generate-passthrough: $(PASSTHROUGH_GEN) ## Generate passthrough types from HyperShift CRDs
-	@echo "Generating passthrough types..."
-	$(PASSTHROUGH_GEN) --registry=$(PKG_DIR)/registry/field_metadata.go --output-dir=$(API_DIR)
+	@if [ -z "$(HYPERSHIFT_DIR)" ]; then \
+		echo "Error: HYPERSHIFT_DIR is not set. Export it or set it in the command:"; \
+		echo "  export HYPERSHIFT_DIR=/path/to/hypershift"; \
+		echo "  make generate-passthrough"; \
+		echo "Or:"; \
+		echo "  make generate-passthrough HYPERSHIFT_DIR=/path/to/hypershift"; \
+		exit 1; \
+	fi
+	@echo "Generating passthrough types from $(HYPERSHIFT_DIR)..."
+	$(PASSTHROUGH_GEN) \
+		--source-dir=$(HYPERSHIFT_DIR) \
+		--types=$(HYPERSHIFT_TYPES) \
+		--output-dir=$(API_DIR) \
+		--package=v1alpha1
 
 .PHONY: generate-openapi
 generate-openapi: $(OPENAPI_GEN) ## Generate OpenAPI schema from Go types
@@ -80,6 +96,18 @@ manifests: $(CONTROLLER_GEN) ## Generate CRD manifests
 
 .PHONY: generate
 generate: generate-registry generate-passthrough manifests generate-openapi ## Run all code generators
+
+.PHONY: demo-passthrough
+demo-passthrough: $(PASSTHROUGH_GEN) ## Demo: Generate passthrough types to /tmp (no HYPERSHIFT_DIR needed)
+	@echo "Running passthrough-gen demo with examples..."
+	@mkdir -p /tmp/demo-output
+	$(PASSTHROUGH_GEN) \
+		--source-dir=./examples \
+		--types=ClusterSpec,HostedClusterPassthrough \
+		--output-dir=/tmp/demo-output \
+		--package=demo
+	@echo "Demo output generated at /tmp/demo-output"
+	@ls -lh /tmp/demo-output
 
 ##@ Build
 
@@ -112,17 +140,20 @@ $(CONTROLLER_GEN): ## Install controller-gen
 	@mkdir -p bin
 	GOBIN=$(shell pwd)/bin $(GOGET) sigs.k8s.io/controller-tools/cmd/controller-gen@latest
 
-$(MARKER_SCANNER): ## Build marker-scanner (placeholder until implemented)
-	@echo "Marker scanner not yet implemented"
-	@exit 1
+$(MARKER_SCANNER): ## Build marker-scanner
+	@echo "Building marker scanner..."
+	@mkdir -p bin
+	$(GOBUILD) -o $(MARKER_SCANNER) ./cmd/marker-scanner
 
-$(PASSTHROUGH_GEN): ## Build passthrough-gen (placeholder until implemented)
-	@echo "Passthrough generator not yet implemented"
-	@exit 1
+$(PASSTHROUGH_GEN): ## Build passthrough-gen
+	@echo "Building passthrough generator..."
+	@mkdir -p bin
+	$(GOBUILD) -o $(PASSTHROUGH_GEN) ./cmd/passthrough-gen
 
-$(OPENAPI_GEN): ## Build openapi-gen (placeholder until implemented)
-	@echo "OpenAPI generator not yet implemented"
-	@exit 1
+$(OPENAPI_GEN): ## Build openapi-gen
+	@echo "Building OpenAPI generator..."
+	@mkdir -p bin
+	$(GOBUILD) -o $(OPENAPI_GEN) ./cmd/openapi-gen
 
 ##@ Cleanup
 
