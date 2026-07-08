@@ -107,19 +107,35 @@ func (g *Generator) Generate(outputDir string) error {
 func (g *Generator) collectImports(typeDefs []*TypeDef) []string {
 	importSet := make(map[string]bool)
 
+	// Add source package import if we have a source package
+	if g.SourcePackage != "" && g.SourcePackageAlias != "" {
+		importSet[fmt.Sprintf(`%s "%s"`, g.SourcePackageAlias, g.SourcePackage)] = true
+	}
+
 	for _, typeDef := range typeDefs {
 		for _, field := range typeDef.Fields {
+			// Strip pointer/slice/map prefixes to get base type
+			typeStr := field.Type
+			typeStr = strings.TrimPrefix(typeStr, "*")
+			typeStr = strings.TrimPrefix(typeStr, "[]")
+			if strings.HasPrefix(typeStr, "map[") {
+				// Extract value type from map[K]V
+				if idx := strings.LastIndex(typeStr, "]"); idx != -1 && idx+1 < len(typeStr) {
+					typeStr = typeStr[idx+1:]
+				}
+			}
+
 			// Extract package from type names like "configv1.URL"
-			if strings.Contains(field.Type, ".") {
+			if strings.Contains(typeStr, ".") {
 				// For now, we'll need to manually map these
 				// In a real implementation, we'd track imports from the AST
-				if strings.HasPrefix(field.Type, "configv1.") {
+				if strings.HasPrefix(typeStr, "configv1.") {
 					importSet[`configv1 "github.com/openshift/api/config/v1"`] = true
 				}
-				if strings.HasPrefix(field.Type, "corev1.") {
+				if strings.HasPrefix(typeStr, "corev1.") {
 					importSet[`corev1 "k8s.io/api/core/v1"`] = true
 				}
-				if strings.HasPrefix(field.Type, "metav1.") {
+				if strings.HasPrefix(typeStr, "metav1.") {
 					importSet[`metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"`] = true
 				}
 			}

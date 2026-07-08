@@ -20,6 +20,12 @@ type Generator struct {
 	// Registry contains existing field markers to preserve
 	Registry markers.FieldRegistry
 
+	// SourcePackage is the import path of the source package (e.g., "github.com/openshift/hypershift/api/hypershift/v1beta1")
+	SourcePackage string
+
+	// SourcePackageAlias is the alias to use for the source package import (e.g., "hypershiftv1")
+	SourcePackageAlias string
+
 	// parsedFiles holds parsed AST of source files
 	parsedFiles map[string]*ast.File
 }

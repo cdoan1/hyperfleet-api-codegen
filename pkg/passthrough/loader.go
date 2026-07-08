@@ -131,7 +131,12 @@ func (g *Generator) createFieldDef(fieldName string, field *ast.Field) FieldDef 
 func (g *Generator) typeToString(expr ast.Expr) string {
 	switch t := expr.(type) {
 	case *ast.Ident:
-		return t.Name
+		// Check if this is a type from the source package that needs to be qualified
+		typeName := t.Name
+		if g.SourcePackageAlias != "" && g.isSourcePackageType(typeName) {
+			return g.SourcePackageAlias + "." + typeName
+		}
+		return typeName
 	case *ast.StarExpr:
 		return "*" + g.typeToString(t.X)
 	case *ast.ArrayType:
@@ -143,6 +148,40 @@ func (g *Generator) typeToString(expr ast.Expr) string {
 	default:
 		return "interface{}"
 	}
+}
+
+// isSourcePackageType checks if a type name is defined in the source package
+// (not a built-in like string, int, bool)
+func (g *Generator) isSourcePackageType(typeName string) bool {
+	// Built-in types don't need qualification
+	builtins := map[string]bool{
+		"bool": true, "byte": true, "complex64": true, "complex128": true,
+		"error": true, "float32": true, "float64": true, "int": true,
+		"int8": true, "int16": true, "int32": true, "int64": true,
+		"rune": true, "string": true, "uint": true, "uint8": true,
+		"uint16": true, "uint32": true, "uint64": true, "uintptr": true,
+	}
+
+	if builtins[typeName] {
+		return false
+	}
+
+	// Check if the type is defined in the parsed source files
+	for _, file := range g.parsedFiles {
+		for _, decl := range file.Decls {
+			if genDecl, ok := decl.(*ast.GenDecl); ok {
+				for _, spec := range genDecl.Specs {
+					if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+						if typeSpec.Name.Name == typeName {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 // getMarkersForField returns markers for a field, from registry or defaults

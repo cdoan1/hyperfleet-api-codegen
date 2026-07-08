@@ -45,11 +45,17 @@ func NewGeneratorFromImportPath(importPath string, sourceTypes []string, registr
 		return nil, fmt.Errorf("resolving import path %s: %w", importPath, err)
 	}
 
+	// Extract package alias from import path (last segment)
+	parts := strings.Split(importPath, "/")
+	packageAlias := "hypershift" + parts[len(parts)-1] // e.g., "hypershiftv1beta1"
+
 	return &Generator{
-		SourceDir:     sourceDir,
-		SourceTypes:   sourceTypes,
-		OutputPackage: "v1alpha1",
-		Registry:      registry,
-		parsedFiles:   make(map[string]*ast.File),
+		SourceDir:          sourceDir,
+		SourceTypes:        sourceTypes,
+		OutputPackage:      "v1alpha1",
+		Registry:           registry,
+		SourcePackage:      importPath,
+		SourcePackageAlias: packageAlias,
+		parsedFiles:        make(map[string]*ast.File),
 	}, nil
 }
