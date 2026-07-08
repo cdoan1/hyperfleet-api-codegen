@@ -105,7 +105,33 @@ make demo-passthrough
 
 This generates passthrough types from `examples/original/` to `/tmp/demo-output`.
 
-Or generate from a cloned HyperShift repository:
+**Generate from HyperShift via go.mod (recommended):**
+
+The passthrough generator can resolve HyperShift types directly from the go.mod dependency:
+
+```bash
+# Using Makefile (imports github.com/openshift/hypershift/api@v0.1.70)
+make generate-passthrough
+
+# Or use the CLI directly with import path
+./bin/passthrough-gen \
+  -import-path=github.com/openshift/hypershift/api/hypershift/v1beta1 \
+  -output-dir=./api/v1alpha1 \
+  -types=HostedClusterSpec,NodePoolSpec \
+  -package=v1alpha1
+```
+
+The `go.mod` currently pins HyperShift to v0.1.70 (baseline version). To bump:
+
+```bash
+# Update to a specific version
+go get github.com/openshift/hypershift/api@v0.1.71
+
+# Then regenerate
+make generate-passthrough
+```
+
+**Alternative: Generate from local HyperShift clone:**
 
 ```bash
 # First, clone HyperShift
@@ -113,9 +139,9 @@ export HYPERSHIFT_DIR=/path/to/hypershift
 git clone https://github.com/openshift/hypershift $HYPERSHIFT_DIR
 
 # Then generate using Makefile
-make generate-passthrough HYPERSHIFT_DIR=$HYPERSHIFT_DIR
+make generate-passthrough-local HYPERSHIFT_DIR=$HYPERSHIFT_DIR
 
-# Or use the CLI directly
+# Or use the CLI directly with source-dir
 ./bin/passthrough-gen \
   -source-dir=$HYPERSHIFT_DIR/api/hypershift/v1beta1 \
   -output-dir=./api/v1alpha1 \

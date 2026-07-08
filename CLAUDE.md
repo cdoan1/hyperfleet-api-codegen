@@ -94,15 +94,18 @@ make all
 ```
 This ensures linting and tests pass. CI will reject commits that don't pass `make all`.
 
-When implemented, the typical workflow will be:
-
 **HyperShift version bump:**
-1. Update HyperShift version in `go.mod`
+
+The passthrough generator resolves HyperShift types via go.mod (no local clone needed):
+
+1. Update HyperShift version: `go get github.com/openshift/hypershift/api@v0.1.71`
 2. Run `make generate-passthrough` to regenerate passthrough types
 3. Review diff for new/removed fields
 4. Add appropriate markers to new fields (default is hidden + service-set)
 5. Run `make manifests openapi` to regenerate CRDs and OpenAPI spec
 6. CI verifies all passthrough fields have required markers
+
+Current baseline: HyperShift v0.1.70
 
 **Feature gate promotion:**
 1. Update gate stage in feature gate registry (e.g., TechPreview → GA)

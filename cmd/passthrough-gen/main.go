@@ -14,22 +14,33 @@ import (
 func main() {
 	var (
 		sourceDir    string
+		importPath   string
 		outputDir    string
 		typeNames    string
 		registryFile string
 		packageName  string
 	)
 
-	flag.StringVar(&sourceDir, "source-dir", "", "Directory containing source Go files (required)")
+	flag.StringVar(&sourceDir, "source-dir", "", "Directory containing source Go files (use this OR -import-path)")
+	flag.StringVar(&importPath, "import-path", "", "Go import path to resolve via go.mod (use this OR -source-dir)")
 	flag.StringVar(&outputDir, "output-dir", "", "Directory for generated output (required)")
 	flag.StringVar(&typeNames, "types", "", "Comma-separated list of type names to generate (required)")
 	flag.StringVar(&registryFile, "registry", "", "Path to field metadata registry (optional)")
 	flag.StringVar(&packageName, "package", "v1alpha1", "Package name for generated code")
 	flag.Parse()
 
-	if sourceDir == "" || outputDir == "" || typeNames == "" {
+	// Validate flags
+	if outputDir == "" || typeNames == "" {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	if sourceDir == "" && importPath == "" {
+		log.Fatalf("Either -source-dir or -import-path must be specified")
+	}
+
+	if sourceDir != "" && importPath != "" {
+		log.Fatalf("Cannot specify both -source-dir and -import-path")
 	}
 
 	// Parse type names
@@ -47,12 +58,25 @@ func main() {
 	}
 
 	// Create generator
-	gen := passthrough.NewGenerator(sourceDir, types, registry)
+	var gen *passthrough.Generator
+	var err error
+
+	if importPath != "" {
+		log.Printf("Resolving import path: %s", importPath)
+		gen, err = passthrough.NewGeneratorFromImportPath(importPath, types, registry)
+		if err != nil {
+			log.Fatalf("Failed to resolve import path: %v", err)
+		}
+		log.Printf("Resolved to directory: %s", gen.SourceDir)
+	} else {
+		gen = passthrough.NewGenerator(sourceDir, types, registry)
+	}
+
 	gen.OutputPackage = packageName
 
 	// Load source files
-	log.Printf("Loading source files from: %s", sourceDir)
-	if err := gen.LoadSourceFiles(sourceDir); err != nil {
+	log.Printf("Loading source files from: %s", gen.SourceDir)
+	if err := gen.LoadSourceFiles(gen.SourceDir); err != nil {
 		log.Fatalf("Failed to load source files: %v", err)
 	}
 

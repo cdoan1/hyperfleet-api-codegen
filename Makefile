@@ -14,11 +14,15 @@ API_DIR=api/v1alpha1
 PKG_DIR=pkg
 CMD_DIR=cmd
 
-# HyperShift source directory (can be overridden via environment variable)
+# HyperShift configuration
+# The import path is resolved via go.mod (recommended approach)
+HYPERSHIFT_IMPORT_PATH ?= github.com/openshift/hypershift/api/hypershift/v1beta1
+HYPERSHIFT_TYPES ?= HostedClusterSpec,NodePoolSpec
+
+# Legacy: HyperShift source directory (deprecated, use HYPERSHIFT_IMPORT_PATH instead)
 # Should point to the root of the HyperShift repo, types are in api/hypershift/v1beta1/
 HYPERSHIFT_DIR ?= $(shell echo $$HYPERSHIFT_DIR)
 HYPERSHIFT_TYPES_DIR ?= $(HYPERSHIFT_DIR)/api/hypershift/v1beta1
-HYPERSHIFT_TYPES ?= HostedClusterSpec,NodePoolSpec
 
 # Tools
 CONTROLLER_GEN ?= $(shell pwd)/bin/controller-gen
@@ -70,13 +74,22 @@ generate-registry: $(MARKER_SCANNER) ## Generate field metadata registry from Go
 	$(MARKER_SCANNER) --input-dirs=$(API_DIR) --output-file=$(PKG_DIR)/registry/field_metadata.go
 
 .PHONY: generate-passthrough
-generate-passthrough: $(PASSTHROUGH_GEN) ## Generate passthrough types from HyperShift CRDs
+generate-passthrough: $(PASSTHROUGH_GEN) ## Generate passthrough types from HyperShift (via go.mod)
+	@echo "Generating passthrough types from $(HYPERSHIFT_IMPORT_PATH)..."
+	$(PASSTHROUGH_GEN) \
+		--import-path=$(HYPERSHIFT_IMPORT_PATH) \
+		--types=$(HYPERSHIFT_TYPES) \
+		--output-dir=$(API_DIR) \
+		--package=v1alpha1
+
+.PHONY: generate-passthrough-local
+generate-passthrough-local: $(PASSTHROUGH_GEN) ## Generate passthrough types from local HyperShift clone (requires HYPERSHIFT_DIR)
 	@if [ -z "$(HYPERSHIFT_DIR)" ]; then \
 		echo "Error: HYPERSHIFT_DIR is not set. Export it or set it in the command:"; \
 		echo "  export HYPERSHIFT_DIR=/path/to/hypershift"; \
-		echo "  make generate-passthrough"; \
+		echo "  make generate-passthrough-local"; \
 		echo "Or:"; \
-		echo "  make generate-passthrough HYPERSHIFT_DIR=/path/to/hypershift"; \
+		echo "  make generate-passthrough-local HYPERSHIFT_DIR=/path/to/hypershift"; \
 		exit 1; \
 	fi
 	@echo "Generating passthrough types from $(HYPERSHIFT_TYPES_DIR)..."
