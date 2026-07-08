@@ -608,6 +608,11 @@ var FieldRegistry = map[string]FieldMeta{
 		FieldPath: "items.spec.properties",
 		WriteMode: Mutable,
 	},
+	"items.spec.tags": {
+		FieldPath:   "items.spec.tags",
+		WriteMode:   Mutable,
+		FeatureGate: "HyperFleetAutoScaling",
+	},
 	"kubeAPIServerDNSName": {
 		FieldPath: "kubeAPIServerDNSName",
 		WriteMode: ServiceSet,
@@ -735,6 +740,7 @@ var FieldRegistry = map[string]FieldMeta{
 	"platform": {
 		FieldPath: "platform",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"properties": {
 		FieldPath: "properties",
@@ -1045,10 +1051,20 @@ var FieldRegistry = map[string]FieldMeta{
 		FieldPath: "spec.properties",
 		WriteMode: Mutable,
 	},
+	"spec.tags": {
+		FieldPath:   "spec.tags",
+		WriteMode:   Mutable,
+		FeatureGate: "HyperFleetAutoScaling",
+	},
 	"sshKey": {
 		FieldPath: "sshKey",
 		WriteMode: ServiceSet,
 		Hidden:    true,
+	},
+	"tags": {
+		FieldPath:   "tags",
+		WriteMode:   Mutable,
+		FeatureGate: "HyperFleetAutoScaling",
 	},
 	"taints": {
 		FieldPath: "taints",

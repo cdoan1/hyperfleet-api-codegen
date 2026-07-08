@@ -109,6 +109,11 @@ generate-openapi: $(OPENAPI_GEN) ## Generate OpenAPI schema from Go types
 		--title="HyperFleet API" \
 		--version=v1alpha1
 
+.PHONY: featuregate-info
+featuregate-info: ## Show feature gate registry and field counts per feature set
+	@$(GOBUILD) -o bin/featuregate-info ./cmd/featuregate-info >/dev/null 2>&1
+	@./bin/featuregate-info
+
 .PHONY: manifests
 manifests: $(CONTROLLER_GEN) ## Generate CRD manifests
 	@echo "Generating CRD manifests..."
@@ -145,6 +150,8 @@ build-tools: ## Build all codegen tools
 	$(GOBUILD) -o $(PASSTHROUGH_GEN) ./cmd/passthrough-gen
 	@echo "Building OpenAPI generator..."
 	$(GOBUILD) -o $(OPENAPI_GEN) ./cmd/openapi-gen
+	@echo "Building feature gate info tool..."
+	$(GOBUILD) -o bin/featuregate-info ./cmd/featuregate-info
 
 .PHONY: build
 build: build-tools ## Build all binaries

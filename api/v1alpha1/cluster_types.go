@@ -38,6 +38,12 @@ type ClusterSpec struct {
 	// +hyperfleet:write-mode=mutable
 	Properties map[string]string `json:"properties,omitempty"`
 
+	// Tags are customer-defined labels for organizational purposes
+	// This is a TechPreview feature
+	// +hyperfleet:write-mode=mutable
+	// +openshift:enable:FeatureGate=HyperFleetAutoScaling
+	Tags map[string]string `json:"tags,omitempty"`
+
 	// AccountID identifies the customer account (platform-managed, hidden from API)
 	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set

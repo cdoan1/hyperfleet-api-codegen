@@ -140,6 +140,26 @@ make generate-passthrough
 
 See [docs/workflow.md](docs/workflow.md) for the complete three-stage pipeline.
 
+### Feature Gates and Field Entitlements
+
+View feature gate registry and field counts per feature set:
+
+```bash
+make featuregate-info
+```
+
+Output shows:
+- All registered feature gates with their stages (GA, TechPreview, DevPreview)
+- Field counts per feature set (Default includes 32 fields, TechPreview includes 35, etc.)
+- Which gates are enabled in each feature set
+
+**Feature set hierarchy:**
+- **Default** - GA features only (production-ready)
+- **TechPreviewNoUpgrade** - GA + TechPreview features
+- **DevPreviewNoUpgrade** - GA + TechPreview + DevPreview features
+
+Example: A field marked `+openshift:enable:FeatureGate=HyperFleetAutoScaling` (TechPreview) is visible in TechPreview and DevPreview feature sets, but hidden in Default.
+
 ### Browse the API with Swagger UI
 
 View interactive API documentation:
@@ -168,22 +188,25 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 🚧 **Proof of Concept** - Active development
 
 **Completed:**
-- ✅ Marker scanner with field registry generator - 214 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
+- ✅ Marker scanner with field registry generator - 217 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
 - ✅ Passthrough type generator - go.mod-based with proper imports ([ROSAENG-61384](https://redhat.atlassian.net/browse/ROSAENG-61384))
 - ✅ OpenAPI generator with $ref support - proper type expansion ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
 - ✅ Swagger UI integration - interactive API documentation
 - ✅ Production workflow validated - field curation and marker-based visibility
+- ✅ Feature gate tooling - registry, filtering, and per-feature-set field counts
 
 **What Works:**
 - Generate passthrough types from HyperShift v0.1.70
 - All fields start hidden (safe defaults)
 - Developers curate which fields to expose
-- Field metadata registry tracks all 214 fields
+- Field metadata registry tracks all 217 fields (3 feature-gated)
+- Feature gate registry with 4 example gates (1 GA, 2 TechPreview, 1 DevPreview)
+- Per-feature-set field filtering (Default: 32 fields, TechPreview: 35 fields)
 - OpenAPI schema properly expands nested types with $ref
 - Swagger UI allows interactive browsing
 
 **Future Work:**
-- Feature gate tooling and CRD variant generation
+- CRD variant generator (filter CRD YAML by feature set)
 - Auto-generated type conversion functions (CRD ↔ REST)
 - Runtime validation using field metadata registry
 
