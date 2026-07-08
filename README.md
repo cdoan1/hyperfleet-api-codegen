@@ -45,7 +45,14 @@ Go markers on fields control visibility, mutability, and entitlements:
 ## Components
 
 ### 1. Passthrough Generator
-Reads HyperShift types and generates HyperFleet passthrough structs with safe defaults. Preserves existing marker annotations on regeneration.
+Reads HyperShift types and generates HyperFleet passthrough structs with safe defaults. **Preserves existing marker annotations on regeneration** using the field metadata registry.
+
+**Marker Preservation:**
+When regenerating passthrough types (e.g., after bumping HyperShift version):
+1. Generator loads existing field metadata from `pkg/registry/field_metadata.json`
+2. Fields already in registry use their saved markers (write-mode, visibility, feature gates)
+3. New upstream fields get safe defaults: hidden (`+k8s:openapi-gen=false`) + service-set (`+hyperfleet:write-mode=service-set`)
+4. Result: Reviewed field markers persist across regenerations, only genuinely new fields need curation
 
 ### 2. Marker Scanner  
 Parses Go source files and generates a field metadata registry mapping each field path to its write mode and feature gate.
@@ -132,11 +139,22 @@ Currently exposed fields: `etcd`, `platform`, `controlPlaneRelease`, `kubeAPISer
 # Update to a newer version
 go get github.com/openshift/hypershift/api@v0.1.71
 
-# Regenerate passthrough types
+# Regenerate passthrough types (preserves existing markers from registry)
 make generate-passthrough
 
-# Review new/changed fields and update markers as needed
+# Review diff - only NEW upstream fields will appear with safe defaults
+git diff api/v1alpha1/hostedclusterspec.passthrough.go
+
+# Curate new fields: remove +k8s:openapi-gen=false to expose them
+# Update markers as needed, then regenerate registry
+make generate-registry generate-openapi
 ```
+
+**How marker preservation works:**
+1. `make generate-registry` creates both `field_metadata.go` (for Go consumers) and `field_metadata.json` (for tools)
+2. `make generate-passthrough` loads `field_metadata.json` and applies saved markers to existing fields
+3. New fields from upstream HyperShift that aren't in the registry get safe defaults (hidden + service-set)
+4. Your reviewed marker choices persist automatically - no manual re-annotation needed
 
 See [docs/workflow.md](docs/workflow.md) for the complete three-stage pipeline.
 
@@ -252,6 +270,7 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 **Completed:**
 - ✅ Marker scanner with field registry generator - 58 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
 - ✅ Passthrough type generator - go.mod-based with proper imports ([ROSAENG-61384](https://redhat.atlassian.net/browse/ROSAENG-61384))
+- ✅ Marker preservation - registry-based marker persistence across regenerations
 - ✅ OpenAPI generator with $ref support - proper type expansion ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
 - ✅ Swagger UI integration - interactive API documentation
 - ✅ Production workflow validated - field curation and marker-based visibility
@@ -262,6 +281,7 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 **What Works:**
 - Generate passthrough types from HyperShift v0.1.70
 - All fields start hidden (safe defaults)
+- Marker preservation across regenerations via JSON registry
 - Developers curate which fields to expose
 - Field metadata registry tracks all 58 fields (3 feature-gated)
 - Feature gate registry with 4 example gates (1 GA, 2 TechPreview, 1 DevPreview)
