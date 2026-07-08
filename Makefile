@@ -223,10 +223,32 @@ open-swagger-ui: ## Open Swagger UI in browser (may need serve-swagger-ui runnin
 ##@ CI
 
 .PHONY: ci-verify
-ci-verify: fmt vet ## CI verification that all passthrough fields have required markers
+ci-verify: $(MARKER_SCANNER) $(OPENAPI_GEN) ## CI verification that all passthrough fields have required markers
+	@echo "Verifying field registry is up to date..."
+	@$(MARKER_SCANNER) --input-dirs=$(API_DIR) --output-file=/tmp/field_metadata_check.go
+	@diff pkg/registry/field_metadata.go /tmp/field_metadata_check.go || ( \
+		echo "Error: pkg/registry/field_metadata.go is out of date"; \
+		echo "Run: make generate-registry"; \
+		exit 1 \
+	)
+	@echo "✓ Field registry is up to date"
+	@echo ""
+	@echo "Verifying OpenAPI schema is up to date..."
+	@$(OPENAPI_GEN) --input-dirs=$(API_DIR) --output-file=/tmp/openapi_check.json --title="HyperFleet API" --version=v1alpha1 >/dev/null 2>&1
+	@diff openapi/openapi.json /tmp/openapi_check.json || ( \
+		echo "Error: openapi/openapi.json is out of date"; \
+		echo "Run: make generate-openapi"; \
+		exit 1 \
+	)
+	@echo "✓ OpenAPI schema is up to date"
+	@echo ""
 	@echo "Verifying all passthrough fields have required markers..."
-	@# TODO: implement marker verification script
-	@echo "Marker verification not yet implemented"
+	@if grep -h "json:" $(API_DIR)/*passthrough.go 2>/dev/null | grep -v "+k8s:openapi-gen" | grep -v "+hyperfleet:write-mode" | head -1; then \
+		echo "Error: Some passthrough fields are missing required markers"; \
+		echo "All fields must have +k8s:openapi-gen and +hyperfleet:write-mode markers"; \
+		exit 1; \
+	fi
+	@echo "✓ All passthrough fields have required markers"
 
 .PHONY: ci
-ci: deps verify ci-verify ## Run all CI checks
+ci: deps test lint ci-verify ## Run all CI checks
