@@ -132,33 +132,7 @@
     },
     "HostedClusterSpecPassthrough": {
       "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
-      "type": "object",
-      "required": [
-        "platform",
-        "release"
-      ],
-      "properties": {
-        "autoNode": {
-          "description": "autoNode specifies the configuration for the autoNode feature.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
-          "type": "object"
-        },
-        "autoscaling": {
-          "description": "autoscaling specifies auto-scaling behavior that applies to all NodePools\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
-          "type": "object"
-        },
-        "kubeAPIServerDNSName": {
-          "description": "kubeAPIServerDNSName specifies a desired DNS name to resolve to the KAS.\n+hyperfleet:write-mode=service-set",
-          "type": "string"
-        },
-        "platform": {
-          "description": "platform specifies the underlying infrastructure provider for the cluster\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
-          "type": "object"
-        },
-        "release": {
-          "description": "release specifies the desired OCP release payload for all the hosted cluster components.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
-          "type": "object"
-        }
-      }
+      "type": "object"
     },
     "NodePool": {
       "description": "NodePool represents a HyperFleet managed NodePool for a cluster\n+kubebuilder:object:root=true\n+kubebuilder:subresource:status\n+kubebuilder:resource:scope=Namespaced",

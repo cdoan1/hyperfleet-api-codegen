@@ -37,11 +37,13 @@
   },
   {
     "fieldPath": "spec.hostedCluster.autoNode",
-    "writeMode": "service-set"
+    "writeMode": "service-set",
+    "hidden": true
   },
   {
     "fieldPath": "spec.hostedCluster.autoscaling",
-    "writeMode": "service-set"
+    "writeMode": "service-set",
+    "hidden": true
   },
   {
     "fieldPath": "spec.hostedCluster.capabilities",
@@ -110,7 +112,8 @@
   },
   {
     "fieldPath": "spec.hostedCluster.kubeAPIServerDNSName",
-    "writeMode": "service-set"
+    "writeMode": "service-set",
+    "hidden": true
   },
   {
     "fieldPath": "spec.hostedCluster.labels",
@@ -144,7 +147,8 @@
   },
   {
     "fieldPath": "spec.hostedCluster.platform",
-    "writeMode": "service-set"
+    "writeMode": "service-set",
+    "hidden": true
   },
   {
     "fieldPath": "spec.hostedCluster.pullSecret",
@@ -153,7 +157,8 @@
   },
   {
     "fieldPath": "spec.hostedCluster.release",
-    "writeMode": "service-set"
+    "writeMode": "service-set",
+    "hidden": true
   },
   {
     "fieldPath": "spec.hostedCluster.secretEncryption",

@@ -72,10 +72,12 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.autoNode": {
 		FieldPath: "spec.hostedCluster.autoNode",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.autoscaling": {
 		FieldPath: "spec.hostedCluster.autoscaling",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.capabilities": {
 		FieldPath: "spec.hostedCluster.capabilities",
@@ -145,6 +147,7 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.kubeAPIServerDNSName": {
 		FieldPath: "spec.hostedCluster.kubeAPIServerDNSName",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.labels": {
 		FieldPath: "spec.hostedCluster.labels",
@@ -179,6 +182,7 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.platform": {
 		FieldPath: "spec.hostedCluster.platform",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.pullSecret": {
 		FieldPath: "spec.hostedCluster.pullSecret",
@@ -188,6 +192,7 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.release": {
 		FieldPath: "spec.hostedCluster.release",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.secretEncryption": {
 		FieldPath: "spec.hostedCluster.secretEncryption",
