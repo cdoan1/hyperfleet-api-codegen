@@ -69,6 +69,12 @@ See `docs/api-management.md` for complete design specification.
 ### Marker Preservation
 When HyperShift upstream bumps, the passthrough generator reruns. The field registry acts as "memory" of which fields have been reviewed and marked appropriately, preventing loss of developer annotations.
 
+**File naming convention**:
+- Generator creates `zz_generated.passthrough.go` (temporary, gitignored)
+- Makefile copies to `hostedclusterspec.passthrough.go` (committed source of truth)
+- Marker scanner reads from `hostedclusterspec.passthrough.go` (skips `zz_generated.*` files)
+- `zz_generated.*` files are automatically removed after copy to prevent duplicate declarations
+
 ### Envelope vs Passthrough Fields
 Wrapper CRDs (Cluster, NodePool) separate:
 - **Envelope fields**: HyperFleet-only (deleteProtection, expirationTimestamp, properties, accountId, etc.)

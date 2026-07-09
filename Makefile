@@ -93,6 +93,13 @@ generate-passthrough: $(PASSTHROUGH_GEN) ## Generate passthrough types from Hype
 			--output-dir=$(API_DIR) \
 			--package=v1alpha1; \
 	fi
+	@# Copy zz_generated file to committed filename and remove the generated one
+	@if [ -f "$(API_DIR)/zz_generated.passthrough.go" ]; then \
+		echo "Copying to hostedclusterspec.passthrough.go (committed source of truth)..."; \
+		cp $(API_DIR)/zz_generated.passthrough.go $(API_DIR)/hostedclusterspec.passthrough.go; \
+		rm $(API_DIR)/zz_generated.passthrough.go; \
+		echo "Note: Edit api/v1alpha1/hostedclusterspec.passthrough.go to curate field markers"; \
+	fi
 
 # .PHONY: generate-passthrough-local
 # generate-passthrough-local: $(PASSTHROUGH_GEN) ## Generate passthrough types from local HyperShift clone (requires HYPERSHIFT_DIR)
