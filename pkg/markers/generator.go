@@ -28,6 +28,15 @@ const (
 	ServiceSet WriteMode = "service-set"
 )
 
+// FeatureGateWriteMode represents a write-mode override for a specific feature gate
+type FeatureGateWriteMode struct {
+	// FeatureGate is the gate that enables this write-mode (empty string = default/no gates enabled)
+	FeatureGate string
+
+	// WriteMode is the effective write-mode when this gate condition matches
+	WriteMode WriteMode
+}
+
 // FieldMeta contains metadata for a single field
 type FieldMeta struct {
 	// FieldPath is the JSON path to the field (e.g., "spec.name")
@@ -41,6 +50,9 @@ type FieldMeta struct {
 
 	// Hidden indicates if the field is excluded from OpenAPI
 	Hidden bool
+
+	// FeatureGateAwareWriteModes allows write-mode to vary based on enabled feature gates
+	FeatureGateAwareWriteModes []FeatureGateWriteMode
 }
 
 // FieldRegistry maps field paths to their metadata
@@ -57,6 +69,13 @@ var FieldRegistry = map[string]FieldMeta{
 		{{- if .Hidden }}
 		Hidden: true,
 		{{- end }}
+		{{- if .GatedWriteModes }}
+		FeatureGateAwareWriteModes: []FeatureGateWriteMode{
+			{{- range .GatedWriteModes }}
+			{FeatureGate: "{{ .FeatureGate }}", WriteMode: {{ .WriteMode }}},
+			{{- end }}
+		},
+		{{- end }}
 	},
 {{- end }}
 }
@@ -67,10 +86,16 @@ type templateData struct {
 }
 
 type templateField struct {
-	FieldPath   string
-	WriteMode   string
+	FieldPath       string
+	WriteMode       string
+	FeatureGate     string
+	Hidden          bool
+	GatedWriteModes []templateGatedWriteMode
+}
+
+type templateGatedWriteMode struct {
 	FeatureGate string
-	Hidden      bool
+	WriteMode   string
 }
 
 // Generate creates the registry Go file from collected metadata
@@ -109,6 +134,23 @@ func (s *MarkerScanner) Generate(outputFile string) error {
 			field.WriteMode = "Immutable"
 		case ServiceSet:
 			field.WriteMode = "ServiceSet"
+		}
+
+		// Convert FeatureGateAwareWriteModes
+		for _, gated := range meta.FeatureGateAwareWriteModes {
+			var writeModeStr string
+			switch gated.WriteMode {
+			case Mutable:
+				writeModeStr = "Mutable"
+			case Immutable:
+				writeModeStr = "Immutable"
+			case ServiceSet:
+				writeModeStr = "ServiceSet"
+			}
+			field.GatedWriteModes = append(field.GatedWriteModes, templateGatedWriteMode{
+				FeatureGate: gated.FeatureGate,
+				WriteMode:   writeModeStr,
+			})
 		}
 
 		data.Fields = append(data.Fields, field)

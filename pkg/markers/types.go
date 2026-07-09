@@ -16,6 +16,15 @@ const (
 	ServiceSet WriteMode = "service-set"
 )
 
+// FeatureGateWriteMode represents a write-mode override for a specific feature gate
+type FeatureGateWriteMode struct {
+	// FeatureGate is the gate that enables this write-mode (empty string = default/no gates enabled)
+	FeatureGate string `json:"featureGate"`
+
+	// WriteMode is the effective write-mode when this gate condition matches
+	WriteMode WriteMode `json:"writeMode"`
+}
+
 // FieldMeta contains metadata extracted from Go markers for a single field
 type FieldMeta struct {
 	// FieldPath is the JSON path to the field (e.g., "spec.name", "spec.hostedCluster.release")
@@ -29,6 +38,10 @@ type FieldMeta struct {
 
 	// Hidden indicates if the field is excluded from OpenAPI (+k8s:openapi-gen=false)
 	Hidden bool
+
+	// FeatureGateAwareWriteModes allows write-mode to vary based on enabled feature gates
+	// Empty FeatureGate in an entry means "default" (when no gates are enabled)
+	FeatureGateAwareWriteModes []FeatureGateWriteMode `json:"featureGateAwareWriteModes,omitempty"`
 }
 
 // FieldRegistry is a map from field path to its metadata

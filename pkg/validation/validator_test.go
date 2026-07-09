@@ -62,7 +62,7 @@ func TestValidator_Validate_WriteMode(t *testing.T) {
 			writeMode:   registry.ServiceSet,
 			operation:   OperationCreate,
 			wantErr:     true,
-			errContains: "service-set and cannot be modified",
+			errContains: "platform-managed",
 		},
 		{
 			name:        "service-set field on update - blocked",
@@ -70,7 +70,7 @@ func TestValidator_Validate_WriteMode(t *testing.T) {
 			writeMode:   registry.ServiceSet,
 			operation:   OperationUpdate,
 			wantErr:     true,
-			errContains: "service-set and cannot be modified",
+			errContains: "platform-managed",
 		},
 	}
 

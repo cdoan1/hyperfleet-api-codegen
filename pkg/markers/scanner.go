@@ -12,9 +12,10 @@ import (
 
 var (
 	// Marker patterns
-	openapiGenPattern  = regexp.MustCompile(`\+k8s:openapi-gen=false`)
-	writeModePattern   = regexp.MustCompile(`\+hyperfleet:write-mode=(mutable|immutable|service-set)`)
-	featureGatePattern = regexp.MustCompile(`\+openshift:enable:FeatureGate=(\w+)`)
+	openapiGenPattern                = regexp.MustCompile(`\+k8s:openapi-gen=false`)
+	writeModePattern                 = regexp.MustCompile(`\+hyperfleet:write-mode=(mutable|immutable|service-set)`)
+	featureGatePattern               = regexp.MustCompile(`\+openshift:enable:FeatureGate=(\w+)`)
+	featureGateAwareWriteModePattern = regexp.MustCompile(`\+hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="([^"]*)",writeMode="(mutable|immutable|service-set)"`)
 )
 
 // NewScanner creates a new marker scanner
@@ -185,8 +186,23 @@ func (s *MarkerScanner) extractMarkers(field *ast.Field, fieldPath string) *Fiel
 		meta.FeatureGate = matches[1]
 	}
 
+	// Extract feature-gate-aware write-modes
+	var gatedModes []FeatureGateWriteMode
+	for _, match := range featureGateAwareWriteModePattern.FindAllStringSubmatch(comments, -1) {
+		featureGate := match[1] // Empty string or gate name
+		mode := WriteMode(match[2])
+		gatedModes = append(gatedModes, FeatureGateWriteMode{
+			FeatureGate: featureGate,
+			WriteMode:   mode,
+		})
+	}
+
+	if len(gatedModes) > 0 {
+		meta.FeatureGateAwareWriteModes = gatedModes
+	}
+
 	// Only include in registry if at least one marker was found
-	if meta.Hidden || meta.WriteMode != "" || meta.FeatureGate != "" {
+	if meta.Hidden || meta.WriteMode != "" || meta.FeatureGate != "" || len(meta.FeatureGateAwareWriteModes) > 0 {
 		return meta
 	}
 

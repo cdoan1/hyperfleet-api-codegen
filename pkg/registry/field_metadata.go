@@ -16,6 +16,15 @@ const (
 	ServiceSet WriteMode = "service-set"
 )
 
+// FeatureGateWriteMode represents a write-mode override for a specific feature gate
+type FeatureGateWriteMode struct {
+	// FeatureGate is the gate that enables this write-mode (empty string = default/no gates enabled)
+	FeatureGate string
+
+	// WriteMode is the effective write-mode when this gate condition matches
+	WriteMode WriteMode
+}
+
 // FieldMeta contains metadata for a single field
 type FieldMeta struct {
 	// FieldPath is the JSON path to the field (e.g., "spec.name")
@@ -29,6 +38,9 @@ type FieldMeta struct {
 
 	// Hidden indicates if the field is excluded from OpenAPI
 	Hidden bool
+
+	// FeatureGateAwareWriteModes allows write-mode to vary based on enabled feature gates
+	FeatureGateAwareWriteModes []FeatureGateWriteMode
 }
 
 // FieldRegistry maps field paths to their metadata

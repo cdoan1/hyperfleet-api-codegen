@@ -32,6 +32,20 @@ type Request struct {
 	// ExistingFields contains field paths from the existing resource (for update operations)
 	// Used to detect which fields are being changed
 	ExistingFields map[string]interface{}
+
+	// EnabledGates is the list of feature gates enabled for this customer
+	// Used to determine effective write-mode when FeatureGateAwareWriteModes is set
+	EnabledGates []string
+}
+
+// IsFeatureGateEnabled returns true if the given feature gate is enabled for this request
+func (r *Request) IsFeatureGateEnabled(gateName string) bool {
+	for _, gate := range r.EnabledGates {
+		if gate == gateName {
+			return true
+		}
+	}
+	return false
 }
 
 // ValidationError represents a validation failure
@@ -97,7 +111,7 @@ func (v *Validator) Validate(req *Request) error {
 		}
 
 		// Check write mode
-		if err := v.validateWriteMode(fieldPath, meta.WriteMode, req); err != nil {
+		if err := v.validateWriteMode(fieldPath, meta, req); err != nil {
 			errors = append(errors, err)
 		}
 	}
@@ -110,13 +124,37 @@ func (v *Validator) Validate(req *Request) error {
 }
 
 // validateWriteMode checks if a field can be set based on its write mode
-func (v *Validator) validateWriteMode(fieldPath string, mode registry.WriteMode, req *Request) *ValidationError {
-	switch mode {
+func (v *Validator) validateWriteMode(fieldPath string, meta registry.FieldMeta, req *Request) *ValidationError {
+	// Determine effective write-mode based on feature-gate-aware overrides
+	effectiveMode := meta.WriteMode // Default fallback
+
+	if len(meta.FeatureGateAwareWriteModes) > 0 {
+		// Check for specific gate match first (takes precedence)
+		for _, override := range meta.FeatureGateAwareWriteModes {
+			if override.FeatureGate != "" && req.IsFeatureGateEnabled(override.FeatureGate) {
+				effectiveMode = override.WriteMode
+				break // First specific match wins
+			}
+		}
+
+		// If no specific match, check for default override (empty gate)
+		if effectiveMode == meta.WriteMode { // Still using base mode
+			for _, override := range meta.FeatureGateAwareWriteModes {
+				if override.FeatureGate == "" {
+					effectiveMode = override.WriteMode
+					break
+				}
+			}
+		}
+	}
+
+	// Enforce the effective mode
+	switch effectiveMode {
 	case registry.ServiceSet:
 		// Service-set fields cannot be set by customers at all
 		return &ValidationError{
 			FieldPath: fieldPath,
-			Reason:    "field is service-set and cannot be modified by customers",
+			Reason:    "field is platform-managed (service-set) and cannot be set by customers",
 		}
 
 	case registry.Immutable:

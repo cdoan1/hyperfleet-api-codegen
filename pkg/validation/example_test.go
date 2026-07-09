@@ -48,7 +48,7 @@ func ExampleValidator_Validate_serviceSet() {
 	fmt.Printf("Error: %v\n", err)
 	// Output:
 	// Error: validation failed:
-	//   field spec.accountId: field is service-set and cannot be modified by customers
+	//   field spec.accountId: field is platform-managed (service-set) and cannot be set by customers
 }
 
 // Example of blocking immutable field changes

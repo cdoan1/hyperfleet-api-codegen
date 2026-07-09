@@ -18,10 +18,11 @@ func (s *MarkerScanner) GenerateJSON(outputFile string) error {
 
 	// Convert registry to sorted slice for deterministic output
 	type jsonField struct {
-		FieldPath   string `json:"fieldPath"`
-		WriteMode   string `json:"writeMode,omitempty"`
-		FeatureGate string `json:"featureGate,omitempty"`
-		Hidden      bool   `json:"hidden,omitempty"`
+		FieldPath                  string                   `json:"fieldPath"`
+		WriteMode                  string                   `json:"writeMode,omitempty"`
+		FeatureGate                string                   `json:"featureGate,omitempty"`
+		Hidden                     bool                     `json:"hidden,omitempty"`
+		FeatureGateAwareWriteModes []FeatureGateWriteMode   `json:"featureGateAwareWriteModes,omitempty"`
 	}
 
 	var fields []jsonField
@@ -34,10 +35,11 @@ func (s *MarkerScanner) GenerateJSON(outputFile string) error {
 	for _, path := range paths {
 		meta := s.Registry[path]
 		field := jsonField{
-			FieldPath:   meta.FieldPath,
-			WriteMode:   string(meta.WriteMode),
-			FeatureGate: meta.FeatureGate,
-			Hidden:      meta.Hidden,
+			FieldPath:                  meta.FieldPath,
+			WriteMode:                  string(meta.WriteMode),
+			FeatureGate:                meta.FeatureGate,
+			Hidden:                     meta.Hidden,
+			FeatureGateAwareWriteModes: meta.FeatureGateAwareWriteModes,
 		}
 		fields = append(fields, field)
 	}
@@ -64,10 +66,11 @@ func LoadRegistryFromJSON(jsonFile string) (FieldRegistry, error) {
 	}
 
 	type jsonField struct {
-		FieldPath   string `json:"fieldPath"`
-		WriteMode   string `json:"writeMode,omitempty"`
-		FeatureGate string `json:"featureGate,omitempty"`
-		Hidden      bool   `json:"hidden,omitempty"`
+		FieldPath                  string                   `json:"fieldPath"`
+		WriteMode                  string                   `json:"writeMode,omitempty"`
+		FeatureGate                string                   `json:"featureGate,omitempty"`
+		Hidden                     bool                     `json:"hidden,omitempty"`
+		FeatureGateAwareWriteModes []FeatureGateWriteMode   `json:"featureGateAwareWriteModes,omitempty"`
 	}
 
 	var fields []jsonField
@@ -78,10 +81,11 @@ func LoadRegistryFromJSON(jsonFile string) (FieldRegistry, error) {
 	registry := make(FieldRegistry)
 	for _, field := range fields {
 		registry[field.FieldPath] = FieldMeta{
-			FieldPath:   field.FieldPath,
-			WriteMode:   WriteMode(field.WriteMode),
-			FeatureGate: field.FeatureGate,
-			Hidden:      field.Hidden,
+			FieldPath:                  field.FieldPath,
+			WriteMode:                  WriteMode(field.WriteMode),
+			FeatureGate:                field.FeatureGate,
+			Hidden:                     field.Hidden,
+			FeatureGateAwareWriteModes: field.FeatureGateAwareWriteModes,
 		}
 	}
 
