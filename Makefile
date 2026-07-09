@@ -346,5 +346,10 @@ test-hypershift-bump: ## Test HyperShift version bump workflow (bumps to v0.1.72
 	@echo "Running HyperShift version bump test..."
 	@.github/workflows/test-scripts/test-hypershift-bump.sh
 
+.PHONY: test-hypershift-bump-latest
+test-hypershift-bump-latest: ## Test HyperShift version bump workflow (bumps to latest)
+	@echo "Running HyperShift latest version bump test..."
+	@.github/workflows/test-scripts/test-hypershift-bump-latest.sh
+
 .PHONY: ci
 ci: deps test lint ci-verify ## Run all CI checks
