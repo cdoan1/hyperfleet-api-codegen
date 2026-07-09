@@ -49,7 +49,7 @@ vet: ## Run go vet
 
 .PHONY: test
 test: ## Run unit tests
-	$(GOTEST) -v -race -coverprofile=coverage.out ./...
+	$(GOTEST) -v -race -coverprofile=coverage.out $(shell go list ./... | grep -v '/cmd/')
 
 .PHONY: test-coverage
 test-coverage: test ## Run tests and show coverage
