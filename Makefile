@@ -148,7 +148,7 @@ verify-conversion: $(CONVERSION_GEN) generate-registry ## Verify conversion code
 		--crd-package=github.com/cdoan1/hyperfleet-api-codegen/api/v1alpha1 \
 		--input-dirs=$(API_DIR) \
 		--output-dir=/tmp/conversion-check >/dev/null 2>&1
-	@diff -r pkg/conversion/v1alpha1 /tmp/conversion-check || ( \
+	@diff -r --exclude='*_test.go' pkg/conversion/v1alpha1 /tmp/conversion-check || ( \
 		echo "Error: conversion code is out of date"; \
 		echo "Run: make generate-conversion"; \
 		exit 1 \
