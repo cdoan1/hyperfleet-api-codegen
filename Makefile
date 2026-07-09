@@ -189,6 +189,20 @@ deps-update: ## Update dependencies
 	$(GOGET) -u ./...
 	$(GOMOD) tidy
 
+.PHONY: get-hypershift-version
+get-hypershift-version: ## Show current HyperShift version in go.mod
+	@PSEUDO_VERSION=$$(grep "github.com/openshift/hypershift/api" go.mod | awk '{print $$2}'); \
+	COMMIT=$$(echo $$PSEUDO_VERSION | rev | cut -d'-' -f1 | rev); \
+	echo "Current HyperShift in go.mod:"; \
+	echo "  Pseudo-version: $$PSEUDO_VERSION"; \
+	echo "  Commit: $$COMMIT"; \
+	TAG=$$(curl -s https://api.github.com/repos/openshift/hypershift/tags | jq -r ".[] | select(.commit.sha | startswith(\"$$COMMIT\")) | .name" | head -1); \
+	if [ -z "$$TAG" ]; then \
+		echo "  Tag: (no tag found - using commit)"; \
+	else \
+		echo "  Tag: $$TAG"; \
+	fi
+
 .PHONY: bump-hypershift
 bump-hypershift: ## Bump HyperShift to next patch version (e.g., v0.1.71 → v0.1.72)
 	@echo "Fetching latest HyperShift tags..."
