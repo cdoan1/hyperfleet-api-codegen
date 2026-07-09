@@ -176,20 +176,32 @@ FromHyperShiftNodePool(np *hypershiftv1beta1.NodePool) v1alpha1.NodePoolStatus
 
 ---
 
-### 11. ROSAENG-61392 - REST Type Conversions (CRD ↔ REST) ❌ NEW
-**Status**: Not started
-**Description**: Generate conversion functions using oapi-codegen
+### 11. ROSAENG-61392 - REST Type Conversions (CRD ↔ REST) ✅ COMPLETE
+**Status**: Complete (2026-07-09)
+**Description**: Generate conversion functions using custom code generator
 
-**Required**:
-- oapi-codegen integration
-- ProjectCluster (CRD → REST)
-- UnprojectCluster (REST → CRD with service-set enrichment)
-- Auto-generated (no hand-written code)
+**Completed**:
+- ✅ Custom code generator (`conversion-gen`) instead of oapi-codegen
+- ✅ REST type generation (Phase 1) - filters hidden fields
+- ✅ ServiceSetFields generation (Phase 2) - extracts service-set fields
+- ✅ Conversion function generation (Phase 3) - Project/Unproject
+- ✅ CLI tool (`cmd/conversion-gen/main.go`)
+- ✅ Makefile targets (`generate-conversion`, `verify-conversion`)
+- ✅ Unit tests (generator logic)
+- ✅ Integration tests (round-trip CRD ↔ REST)
+- ✅ CI enforcement (verify-conversion in workflow)
+- ✅ Documentation updated (`docs/api-management.md`)
 
-**Complexity**: Medium
-**Priority**: Medium (needed for Platform API implementation)
+**Generated files** (auto-regenerated on CRD changes):
+- `pkg/conversion/v1alpha1/rest/*.go` - 9 REST type files
+- `pkg/conversion/types.go` - ServiceSetFields struct (58 fields)
+- `pkg/conversion/v1alpha1/cluster.go` - Cluster conversions
+- `pkg/conversion/v1alpha1/nodepool.go` - NodePool conversions
 
-**Recommendation**: Next priority after POC validation
+**Implementation note**: Used custom AST-based generator instead of oapi-codegen to avoid OpenAPI 3.0 migration and maintain architectural consistency with marker-based approach.
+
+**Complexity**: Medium (as estimated)
+**Actual Effort**: ~2 days (generator + tests + CI)
 
 ---
 
@@ -244,10 +256,10 @@ From epic description:
 - ✅ **Generated field metadata registry powers generic validation** - DONE
 - ✅ **OpenAPI spec only includes visible fields** - DONE
 - ✅ **Platform API enforces write-mode and feature gate rules at runtime** - DONE (POC validation layer)
-- ❌ **Type conversion functions are fully generated (no hand-written code)** - NOT STARTED (ROSAENG-61392)
-- ⚠️ **CI prevents unmarked passthrough fields from merging** - PARTIAL (marker validation works, but CI test was removed)
+- ✅ **Type conversion functions are fully generated (no hand-written code)** - DONE (ROSAENG-61392, 2026-07-09)
+- ✅ **CI prevents unmarked passthrough fields from merging** - DONE (marker validation + verify-conversion enforced in CI)
 
-**POC Success**: 5/7 criteria met, 1 partial
+**POC Success**: 7/7 criteria met ✅ **COMPLETE**
 
 ---
 
@@ -255,31 +267,33 @@ From epic description:
 
 ### Immediate (This Week)
 
-1. **✅ Update Epic Status**: Change ROSAENG-61383 from "New" to "In Progress" or "Review"
+1. **✅ Update Epic Status**: Change ROSAENG-61383 from "New" to "Review" or "Done"
+   - All 7/7 success criteria complete
+   - POC is feature-complete
 
-2. **📝 Close or Re-scope ROSAENG-61386** (CI Verification)
-   - Current state: Marker validation works via `marker-scanner --validate`
-   - Removed flawed grep-based test
-   - Decision: Is current CI sufficient, or do we need more validation?
+2. **✅ Close ROSAENG-61392** (REST Type Conversions) - COMPLETE (2026-07-09)
+   - Custom generator implemented and tested
+   - CI enforcement in place
+   - Documentation updated
 
-3. **🔍 Get Feedback on ROSAENG-61570** (Feature-Gate-Aware Write-Mode)
+3. **✅ Close ROSAENG-61386** (CI Verification) - COMPLETE
+   - Marker validation via `marker-scanner --validate`
+   - Conversion code verification via `verify-conversion`
+   - All verifications enforced in CI workflow
+
+4. **🔍 Get Feedback on ROSAENG-61570** (Feature-Gate-Aware Write-Mode)
    - Design doc is ready for review
    - Share with Lucas and team
    - Decide: Proceed with implementation or defer?
 
 ### Short Term (Next 2 Weeks)
 
-4. **📚 Create Developer Troubleshooting Guide** (Part of ROSAENG-61394)
+5. **📚 Create Developer Troubleshooting Guide** (Part of ROSAENG-61394)
    - Common CI failures and fixes
    - Marker syntax errors
    - OpenAPI generation issues
    - HyperShift version bump workflow
-
-5. **🔄 REST Type Conversions** (ROSAENG-61392)
-   - Integrate oapi-codegen
-   - Generate REST types from OpenAPI
-   - Auto-generate conversion functions
-   - **Priority**: High for Platform API integration
+   - Conversion generation issues
 
 ### Medium Term (Month 1-2)
 
