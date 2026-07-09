@@ -339,11 +339,11 @@ func (g *Generator) generateRESTType(ti *typeInfo) string {
 			b.WriteString(line + "\n")
 		}
 	} else {
-		b.WriteString(fmt.Sprintf("// %s is the REST representation of %s (visible fields only)\n", ti.Name, ti.Name))
+		fmt.Fprintf(&b, "// %s is the REST representation of %s (visible fields only)\n", ti.Name, ti.Name)
 	}
 
 	// Struct header
-	b.WriteString(fmt.Sprintf("type %s struct {\n", ti.Name))
+	fmt.Fprintf(&b, "type %s struct {\n", ti.Name)
 
 	// Generate fields
 	for _, fi := range visibleFields {
@@ -377,7 +377,7 @@ func (g *Generator) generateRESTType(ti *typeInfo) string {
 		}
 
 		// Field definition
-		b.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", fi.GoName, fi.GoType, jsonTag))
+		fmt.Fprintf(&b, "\t%s %s `json:\"%s\"`\n", fi.GoName, fi.GoType, jsonTag)
 	}
 
 	b.WriteString("}\n")
@@ -458,8 +458,8 @@ func (g *Generator) generateServiceSetFields() error {
 	b.WriteString("type ServiceSetFields struct {\n")
 
 	for _, f := range fields {
-		b.WriteString(fmt.Sprintf("\t// %s is service-set (platform-managed, hidden from API)\n", f.GoName))
-		b.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", f.GoName, f.GoType, f.JSONTag))
+		fmt.Fprintf(&b, "\t// %s is service-set (platform-managed, hidden from API)\n", f.GoName)
+		fmt.Fprintf(&b, "\t%s %s `json:\"%s\"`\n", f.GoName, f.GoType, f.JSONTag)
 	}
 
 	b.WriteString("}\n")
@@ -552,9 +552,9 @@ func (g *Generator) generateResourceConversions(resource string) string {
 
 	// Imports
 	b.WriteString("import (\n")
-	b.WriteString(fmt.Sprintf("\tv1alpha1 \"%s\"\n", g.CRDPackage))
+	fmt.Fprintf(&b, "\tv1alpha1 \"%s\"\n", g.CRDPackage)
 	b.WriteString("\t\"github.com/cdoan1/hyperfleet-api-codegen/pkg/conversion\"\n")
-	b.WriteString(fmt.Sprintf("\t\"github.com/cdoan1/hyperfleet-api-codegen/pkg/conversion/%s/rest\"\n", g.APIVersion))
+	fmt.Fprintf(&b, "\t\"github.com/cdoan1/hyperfleet-api-codegen/pkg/conversion/%s/rest\"\n", g.APIVersion)
 	b.WriteString(")\n\n")
 
 	// Project function (CRD → REST)
@@ -574,15 +574,15 @@ func (g *Generator) generateProjectFunction(resource string) string {
 	specType := resource + "Spec"
 	statusType := resource + "Status"
 
-	b.WriteString(fmt.Sprintf("// Project%s converts CRD %s to REST (visible fields only)\n", resource, resource))
-	b.WriteString(fmt.Sprintf("func Project%s(crd *v1alpha1.%s) *rest.%s {\n", resource, resource, resource))
+	fmt.Fprintf(&b, "// Project%s converts CRD %s to REST (visible fields only)\n", resource, resource)
+	fmt.Fprintf(&b, "func Project%s(crd *v1alpha1.%s) *rest.%s {\n", resource, resource, resource)
 	b.WriteString("\tif crd == nil {\n")
 	b.WriteString("\t\treturn nil\n")
 	b.WriteString("\t}\n\n")
 
-	b.WriteString(fmt.Sprintf("\treturn &rest.%s{\n", resource))
-	b.WriteString(fmt.Sprintf("\t\tSpec:   project%s(crd.Spec),\n", specType))
-	b.WriteString(fmt.Sprintf("\t\tStatus: project%s(crd.Status),\n", statusType))
+	fmt.Fprintf(&b, "\treturn &rest.%s{\n", resource)
+	fmt.Fprintf(&b, "\t\tSpec:   project%s(crd.Spec),\n", specType)
+	fmt.Fprintf(&b, "\t\tStatus: project%s(crd.Status),\n", statusType)
 	b.WriteString("\t}\n")
 	b.WriteString("}\n\n")
 
@@ -605,9 +605,9 @@ func (g *Generator) generateProjectSpecFunction(resource, specType string) strin
 		return ""
 	}
 
-	b.WriteString(fmt.Sprintf("// project%s converts CRD %s to REST\n", specType, specType))
-	b.WriteString(fmt.Sprintf("func project%s(crd v1alpha1.%s) rest.%s {\n", specType, specType, specType))
-	b.WriteString(fmt.Sprintf("\treturn rest.%s{\n", specType))
+	fmt.Fprintf(&b, "// project%s converts CRD %s to REST\n", specType, specType)
+	fmt.Fprintf(&b, "func project%s(crd v1alpha1.%s) rest.%s {\n", specType, specType, specType)
+	fmt.Fprintf(&b, "\treturn rest.%s{\n", specType)
 
 	// Copy visible fields only
 	for _, fi := range ti.Fields {
@@ -624,9 +624,9 @@ func (g *Generator) generateProjectSpecFunction(resource, specType string) strin
 		}
 
 		if needsHelper {
-			b.WriteString(fmt.Sprintf("\t\t%s: project%s(crd.%s),\n", fi.GoName, baseType, fi.GoName))
+			fmt.Fprintf(&b, "\t\t%s: project%s(crd.%s),\n", fi.GoName, baseType, fi.GoName)
 		} else {
-			b.WriteString(fmt.Sprintf("\t\t%s: crd.%s,\n", fi.GoName, fi.GoName))
+			fmt.Fprintf(&b, "\t\t%s: crd.%s,\n", fi.GoName, fi.GoName)
 		}
 	}
 
@@ -645,16 +645,16 @@ func (g *Generator) generateProjectStatusFunction(resource, statusType string) s
 		return ""
 	}
 
-	b.WriteString(fmt.Sprintf("// project%s converts CRD %s to REST\n", statusType, statusType))
-	b.WriteString(fmt.Sprintf("func project%s(crd v1alpha1.%s) rest.%s {\n", statusType, statusType, statusType))
-	b.WriteString(fmt.Sprintf("\treturn rest.%s{\n", statusType))
+	fmt.Fprintf(&b, "// project%s converts CRD %s to REST\n", statusType, statusType)
+	fmt.Fprintf(&b, "func project%s(crd v1alpha1.%s) rest.%s {\n", statusType, statusType, statusType)
+	fmt.Fprintf(&b, "\treturn rest.%s{\n", statusType)
 
 	// Copy all fields (status fields are typically all visible)
 	for _, fi := range ti.Fields {
 		if fi.Hidden {
 			continue
 		}
-		b.WriteString(fmt.Sprintf("\t\t%s: crd.%s,\n", fi.GoName, fi.GoName))
+		fmt.Fprintf(&b, "\t\t%s: crd.%s,\n", fi.GoName, fi.GoName)
 	}
 
 	b.WriteString("\t}\n")
@@ -669,20 +669,20 @@ func (g *Generator) generateUnprojectFunction(resource string) string {
 
 	specType := resource + "Spec"
 
-	b.WriteString(fmt.Sprintf("// Unproject%s converts REST %sSpec to CRD with service-set enrichment\n", resource, resource))
-	b.WriteString(fmt.Sprintf("func Unproject%s(spec *rest.%s, enrichment *conversion.ServiceSetFields) *v1alpha1.%s {\n", resource, specType, specType))
+	fmt.Fprintf(&b, "// Unproject%s converts REST %sSpec to CRD with service-set enrichment\n", resource, resource)
+	fmt.Fprintf(&b, "func Unproject%s(spec *rest.%s, enrichment *conversion.ServiceSetFields) *v1alpha1.%s {\n", resource, specType, specType)
 	b.WriteString("\tif spec == nil {\n")
 	b.WriteString("\t\treturn nil\n")
 	b.WriteString("\t}\n\n")
 
 	ti, exists := g.typeInfos[specType]
 	if !exists {
-		b.WriteString(fmt.Sprintf("\treturn &v1alpha1.%s{}\n", specType))
+		fmt.Fprintf(&b, "\treturn &v1alpha1.%s{}\n", specType)
 		b.WriteString("}\n")
 		return b.String()
 	}
 
-	b.WriteString(fmt.Sprintf("\tcrdSpec := &v1alpha1.%s{\n", specType))
+	fmt.Fprintf(&b, "\tcrdSpec := &v1alpha1.%s{\n", specType)
 
 	// Copy visible fields from REST
 	b.WriteString("\t\t// Visible fields from REST request\n")
@@ -700,9 +700,9 @@ func (g *Generator) generateUnprojectFunction(resource string) string {
 		}
 
 		if needsHelper {
-			b.WriteString(fmt.Sprintf("\t\t%s: unproject%s(spec.%s),\n", fi.GoName, baseType, fi.GoName))
+			fmt.Fprintf(&b, "\t\t%s: unproject%s(spec.%s),\n", fi.GoName, baseType, fi.GoName)
 		} else {
-			b.WriteString(fmt.Sprintf("\t\t%s: spec.%s,\n", fi.GoName, fi.GoName))
+			fmt.Fprintf(&b, "\t\t%s: spec.%s,\n", fi.GoName, fi.GoName)
 		}
 	}
 
@@ -715,7 +715,7 @@ func (g *Generator) generateUnprojectFunction(resource string) string {
 	for _, fi := range ti.Fields {
 		if fi.WriteMode == registry.ServiceSet {
 			enrichField := g.pathToGoName(fi.FieldPath)
-			b.WriteString(fmt.Sprintf("\t\tcrdSpec.%s = enrichment.%s\n", fi.GoName, enrichField))
+			fmt.Fprintf(&b, "\t\tcrdSpec.%s = enrichment.%s\n", fi.GoName, enrichField)
 		}
 	}
 
@@ -752,13 +752,13 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 		customType := baseType
 
 		// Generate project helper
-		b.WriteString(fmt.Sprintf("// project%s converts CRD type to REST\n", customType))
-		b.WriteString(fmt.Sprintf("func project%s(crd v1alpha1.%s) rest.%s {\n", customType, customType, customType))
-		b.WriteString(fmt.Sprintf("\treturn rest.%s{\n", customType))
+		fmt.Fprintf(&b, "// project%s converts CRD type to REST\n", customType)
+		fmt.Fprintf(&b, "func project%s(crd v1alpha1.%s) rest.%s {\n", customType, customType, customType)
+		fmt.Fprintf(&b, "\treturn rest.%s{\n", customType)
 
 		for _, pfi := range pti.Fields {
 			if !pfi.Hidden {
-				b.WriteString(fmt.Sprintf("\t\t%s: crd.%s,\n", pfi.GoName, pfi.GoName))
+				fmt.Fprintf(&b, "\t\t%s: crd.%s,\n", pfi.GoName, pfi.GoName)
 			}
 		}
 
@@ -766,13 +766,13 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 		b.WriteString("}\n\n")
 
 		// Generate unproject helper
-		b.WriteString(fmt.Sprintf("// unproject%s converts REST type to CRD\n", customType))
-		b.WriteString(fmt.Sprintf("func unproject%s(rest rest.%s) v1alpha1.%s {\n", customType, customType, customType))
-		b.WriteString(fmt.Sprintf("\treturn v1alpha1.%s{\n", customType))
+		fmt.Fprintf(&b, "// unproject%s converts REST type to CRD\n", customType)
+		fmt.Fprintf(&b, "func unproject%s(rest rest.%s) v1alpha1.%s {\n", customType, customType, customType)
+		fmt.Fprintf(&b, "\treturn v1alpha1.%s{\n", customType)
 
 		for _, pfi := range pti.Fields {
 			if !pfi.Hidden {
-				b.WriteString(fmt.Sprintf("\t\t%s: rest.%s,\n", pfi.GoName, pfi.GoName))
+				fmt.Fprintf(&b, "\t\t%s: rest.%s,\n", pfi.GoName, pfi.GoName)
 			}
 		}
 
@@ -799,14 +799,3 @@ func (g *Generator) writeFile(relativePath, content string) error {
 	return os.WriteFile(fullPath, []byte(content), 0644)
 }
 
-// sortedKeys returns sorted keys from a map
-func sortedKeys[K ~string, V any](m map[K]V) []K {
-	keys := make([]K, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-	return keys
-}
