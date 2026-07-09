@@ -29,6 +29,7 @@ CONTROLLER_GEN ?= $(shell pwd)/bin/controller-gen
 MARKER_SCANNER ?= $(shell pwd)/bin/marker-scanner
 PASSTHROUGH_GEN ?= $(shell pwd)/bin/passthrough-gen
 OPENAPI_GEN ?= $(shell pwd)/bin/openapi-gen
+CONVERSION_GEN ?= $(shell pwd)/bin/conversion-gen
 
 .PHONY: help
 help: ## Display this help
@@ -128,6 +129,16 @@ generate-openapi: $(OPENAPI_GEN) ## Generate OpenAPI schema from Go types
 		--title="HyperFleet API" \
 		--version=v1alpha1
 
+.PHONY: generate-conversion
+generate-conversion: $(CONVERSION_GEN) generate-registry ## Generate REST types and conversion functions
+	@echo "Generating REST types and conversion functions..."
+	@mkdir -p pkg/conversion/v1alpha1/rest
+	$(CONVERSION_GEN) \
+		--api-version=v1alpha1 \
+		--crd-package=github.com/cdoan1/hyperfleet-api-codegen/api/v1alpha1 \
+		--input-dirs=$(API_DIR) \
+		--output-dir=pkg/conversion/v1alpha1
+
 .PHONY: featuregate-info
 featuregate-info: ## Show feature gate registry and field counts per feature set
 	@$(GOBUILD) -o bin/featuregate-info ./cmd/featuregate-info >/dev/null 2>&1
@@ -149,7 +160,7 @@ manifests: $(CONTROLLER_GEN) ## Generate CRD manifests
 	$(CONTROLLER_GEN) crd paths="./$(API_DIR)/..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
-generate: generate-registry generate-passthrough manifests generate-openapi ## Run all code generators
+generate: generate-registry generate-passthrough manifests generate-openapi generate-conversion ## Run all code generators
 
 .PHONY: test-hypershift-integration
 test-hypershift-integration: $(PASSTHROUGH_GEN) ## Test: Generate from HyperShift via go.mod to test-output/
@@ -179,6 +190,8 @@ build-tools: ## Build all codegen tools
 	$(GOBUILD) -o $(PASSTHROUGH_GEN) ./cmd/passthrough-gen
 	@echo "Building OpenAPI generator..."
 	$(GOBUILD) -o $(OPENAPI_GEN) ./cmd/openapi-gen
+	@echo "Building conversion generator..."
+	$(GOBUILD) -o $(CONVERSION_GEN) ./cmd/conversion-gen
 	@echo "Building feature gate info tool..."
 	$(GOBUILD) -o bin/featuregate-info ./cmd/featuregate-info
 
@@ -270,6 +283,11 @@ $(OPENAPI_GEN): ## Build openapi-gen
 	@echo "Building OpenAPI generator..."
 	@mkdir -p bin
 	$(GOBUILD) -o $(OPENAPI_GEN) ./cmd/openapi-gen
+
+$(CONVERSION_GEN): ## Build conversion-gen
+	@echo "Building conversion generator..."
+	@mkdir -p bin
+	$(GOBUILD) -o $(CONVERSION_GEN) ./cmd/conversion-gen
 
 ##@ Cleanup
 
