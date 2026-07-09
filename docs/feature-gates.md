@@ -273,30 +273,49 @@ Today, feature gates **only** control whether a field appears in the API. They *
 Etcd *EtcdSpec `json:"etcd,omitempty"`
 ```
 
-### Future Enhancement: Feature-Gated Write-Mode
+### Future Enhancement: Feature-Gate-Aware Write-Mode
 
-**Status**: Design proposal ([ROSAENG-61570](https://redhat.atlassian.net/browse/ROSAENG-61570))
+**Status**: Design proposal - REVISED ([ROSAENG-61570](https://redhat.atlassian.net/browse/ROSAENG-61570))
 
-See [feature-gated-write-mode-design.md](./feature-gated-write-mode-design.md) for the proposed solution.
+See [feature-gated-write-mode-design.md](./feature-gated-write-mode-design.md) for the complete design.
+
+**Key insight**: Write-mode control will work **independently** of feature gating - it's not only for fields behind a FeatureGate. This allows customer-tier-based control on GA fields.
 
 **Proposed syntax** (not yet implemented):
 
 ```go
-// Base write-mode for Default feature set
+// Use Case 1: GA field with customer-tier write-mode control
+// Standard customers: immutable (set on create only)
+// Premium customers: mutable (can change anytime)
+// +hyperfleet:write-mode=immutable
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="",writeMode="immutable"
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="MyPremiumFeature",writeMode="mutable"
+ReleaseChannel string `json:"releaseChannel"`
+
+// Use Case 2: Gated field with progressive write-mode rollout
+// Default customers: service-set (platform-controlled)
+// TechPreview+ customers: mutable (customer-controlled)
 // +hyperfleet:write-mode=service-set
-// Per-feature-set overrides (FUTURE)
-// +hyperfleet:write-mode[TechPreviewNoUpgrade]=mutable
-// +hyperfleet:write-mode[DevPreviewNoUpgrade]=mutable
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="",writeMode="service-set"
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="HyperFleetEtcdConfig",writeMode="mutable"
 // +openshift:enable:FeatureGate=HyperFleetEtcdConfig
 Etcd *EtcdSpec `json:"etcd,omitempty"`
 ```
 
 **Behavior** (when implemented):
-- Default customers: `etcd` is service-set (platform-controlled)
-- TechPreview customers: `etcd` is mutable (customer-controlled)
-- DevPreview customers: `etcd` is mutable
+- **Use Case 1**: GA field varies by customer subscription tier (no feature gate required)
+  - Standard tier: `releaseChannel` is immutable
+  - Premium tier: `releaseChannel` is mutable
+- **Use Case 2**: Gated field with progressive rollout
+  - Default customers: `etcd` is service-set (platform-controlled)
+  - TechPreview+ customers: `etcd` is mutable (customer-controlled)
 
-This enables **gradual rollout of customer control** over sensitive fields.
+**Why this approach**: Follows existing OpenShift API marker patterns (`FeatureGateAwareEnum`, `FeatureGateAwareXValidation`) instead of inventing new syntax.
+
+This enables:
+- **Customer-tier-based control**: Different write-modes for different subscription tiers
+- **Gradual rollout**: Progressively open up customer control over sensitive fields
+- **Independent of gating**: Works on GA fields without requiring feature gates
 
 ## Best Practices
 
