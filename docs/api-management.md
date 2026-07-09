@@ -1,6 +1,9 @@
 # API Management: HyperShift CRD to Platform API OpenAPI
 
-**Last Updated Date**: 2026-06-27
+**Last Updated Date**: 2026-06-27  
+**Status**: Current as of POC implementation
+
+> **Note**: This document will need updates when [ROSAENG-61570](https://redhat.atlassian.net/browse/ROSAENG-61570) (Feature-Gate-Aware Write-Mode) is implemented. See [feature-gated-write-mode-design.md](./feature-gated-write-mode-design.md) for the planned enhancement that will allow write-modes to vary based on customer tier or feature gate enablement.
 
 ## Summary
 
@@ -155,6 +158,27 @@ func customerHasGate(customer Customer, gate string) bool {
     return entitlements.HasGate(customer.AccountID, gate)
 }
 ```
+
+#### Future: Feature-Gate-Aware Write-Mode (ROSAENG-61570)
+
+Currently, feature gates only control **visibility** (whether a field exists in the API). A field's write-mode is fixed for all customers.
+
+**Planned enhancement**: Allow write-mode to vary based on customer's enabled feature gates. This enables:
+- **Customer-tier control**: GA fields can have different write-modes for different subscription tiers
+- **Progressive rollout**: Start with `service-set` (platform-controlled) for most customers, then open up to `mutable` for premium/beta customers
+
+**Example** (not yet implemented):
+```go
+// GA field with customer-tier-based write-mode
+// Standard customers: immutable
+// Premium customers (with gate enabled): mutable
+// +hyperfleet:write-mode=immutable
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="",writeMode="immutable"
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="PremiumFeature",writeMode="mutable"
+ReleaseChannel string `json:"releaseChannel"`
+```
+
+See [feature-gated-write-mode-design.md](./feature-gated-write-mode-design.md) for complete design.
 
 ### Generation Pipeline
 
