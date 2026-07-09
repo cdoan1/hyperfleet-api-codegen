@@ -109,10 +109,63 @@ Expected structure (not yet implemented):
 
 ## Development Workflow
 
-**Before every commit, run:**
+### Commit Requirements (MANDATORY)
+
+**Before EVERY commit to main branch:**
+
+1. **Verify compilation:**
+   ```bash
+   make build-tools  # All tools must compile
+   go build ./...    # All packages must compile
+   ```
+
+2. **Run tests:**
+   ```bash
+   make test  # All tests must pass
+   ```
+
+3. **Run linting:**
+   ```bash
+   make lint  # Code must pass linters
+   ```
+
+4. **Or run everything:**
+   ```bash
+   make all  # Combines build-tools, lint, test
+   ```
+
+**CRITICAL RULES:**
+- ❌ **Never commit code that doesn't compile** - even if "you'll fix it later"
+- ❌ **Never commit if `make test` fails** - CI will fail and block the pipeline
+- ❌ **Main branch must stay green** - broken CI normalizes technical debt
+- ✅ **Fix compilation/test errors BEFORE committing** - prevents drift
+- ✅ **If unsure, run `make all`** - it catches everything
+
+**When working on new packages:**
+- New packages MUST compile even if incomplete
+- If adding generated code, ensure it compiles before committing
+- Add basic tests early (even placeholder tests) to catch regressions
+- Use `// TODO:` comments for incomplete features, not broken code
+
+**Exception:** Use a **feature branch** if you need to commit WIP code that doesn't compile. Never commit broken code directly to main.
+
+### Monitoring CI
+
+**After pushing to main:**
 ```bash
-make all
+# Check latest CI run status
+gh run list --limit 1
+
+# View failed run details
+gh run view <run-id> --log-failed
 ```
+
+**If CI fails:**
+1. **Stop new work immediately** - don't pile more commits on broken CI
+2. **Diagnose the failure** - read the CI logs
+3. **Fix it in the next commit** - priority over new features
+4. **Verify locally first** - `make all` before pushing the fix
+
 This ensures linting and tests pass. CI will reject commits that don't pass `make all`.
 
 **HyperShift version bump:**
