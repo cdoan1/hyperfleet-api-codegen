@@ -189,6 +189,47 @@ deps-update: ## Update dependencies
 	$(GOGET) -u ./...
 	$(GOMOD) tidy
 
+.PHONY: bump-hypershift
+bump-hypershift: ## Bump HyperShift to next patch version (e.g., v0.1.71 → v0.1.72)
+	@echo "Fetching latest HyperShift tags..."
+	@LATEST_TAG=$$(curl -s https://api.github.com/repos/openshift/hypershift/tags | jq -r '.[0].name'); \
+	LATEST_COMMIT=$$(curl -s https://api.github.com/repos/openshift/hypershift/tags | jq -r '.[0].commit.sha'); \
+	echo "Latest HyperShift version: $$LATEST_TAG (commit $$LATEST_COMMIT)"; \
+	echo "Updating go.mod..."; \
+	$(GOGET) github.com/openshift/hypershift/api@$$LATEST_COMMIT && \
+	$(GOMOD) tidy && \
+	echo "Updated to $$LATEST_TAG" && \
+	echo "Next steps:" && \
+	echo "  1. Update Makefile comment with new version/commit" && \
+	echo "  2. Run: make generate-passthrough" && \
+	echo "  3. Review: git diff api/v1alpha1/hostedclusterspec.passthrough.go" && \
+	echo "  4. Curate new fields and regenerate: make generate-registry generate-openapi"
+
+.PHONY: bump-hypershift-to
+bump-hypershift-to: ## Bump HyperShift to specific version (usage: make bump-hypershift-to VERSION=v0.1.72)
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION not specified"; \
+		echo "Usage: make bump-hypershift-to VERSION=v0.1.72"; \
+		exit 1; \
+	fi
+	@echo "Fetching commit for HyperShift $(VERSION)..."
+	@COMMIT=$$(curl -s https://api.github.com/repos/openshift/hypershift/tags | jq -r ".[] | select(.name == \"$(VERSION)\") | .commit.sha"); \
+	if [ -z "$$COMMIT" ]; then \
+		echo "Error: Version $(VERSION) not found"; \
+		echo "Check available tags at: https://github.com/openshift/hypershift/tags"; \
+		exit 1; \
+	fi; \
+	echo "Found commit: $$COMMIT"; \
+	echo "Updating go.mod..."; \
+	$(GOGET) github.com/openshift/hypershift/api@$$COMMIT && \
+	$(GOMOD) tidy && \
+	echo "Updated to $(VERSION) (commit $$COMMIT)" && \
+	echo "Next steps:" && \
+	echo "  1. Update Makefile comment with: $(VERSION) (commit $$COMMIT)" && \
+	echo "  2. Run: make generate-passthrough" && \
+	echo "  3. Review: git diff api/v1alpha1/hostedclusterspec.passthrough.go" && \
+	echo "  4. Curate new fields and regenerate: make generate-registry generate-openapi"
+
 $(CONTROLLER_GEN): ## Install controller-gen
 	@echo "Installing controller-gen..."
 	@mkdir -p bin
