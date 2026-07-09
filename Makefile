@@ -234,8 +234,8 @@ bump-hypershift-to: ## Bump HyperShift to specific version (usage: make bump-hyp
 		exit 1; \
 	fi
 	@echo "Fetching commit for HyperShift $(VERSION)..."
-	@COMMIT=$$(curl -s https://api.github.com/repos/openshift/hypershift/tags | jq -r ".[] | select(.name == \"$(VERSION)\") | .commit.sha"); \
-	if [ -z "$$COMMIT" ]; then \
+	@COMMIT=$$(curl -s https://api.github.com/repos/openshift/hypershift/tags | jq -r '.[] | select(.name == "$(VERSION)") | .commit.sha'); \
+	if [ -z "$$COMMIT" ] || [ "$$COMMIT" = "null" ]; then \
 		echo "Error: Version $(VERSION) not found"; \
 		echo "Check available tags at: https://github.com/openshift/hypershift/tags"; \
 		exit 1; \
