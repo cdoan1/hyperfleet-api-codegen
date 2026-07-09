@@ -83,16 +83,10 @@ type ServiceSetFields struct {
 	OperatorConfiguration *hypershiftv1beta1.OperatorConfiguration `json:"operatorConfiguration"`
 	// PausedUntil is service-set (platform-managed, hidden from API)
 	PausedUntil *string `json:"pausedUntil"`
-	// PausedUntil is service-set (platform-managed, hidden from API)
-	PausedUntil *string `json:"pausedUntil"`
 	// Platform is service-set (platform-managed, hidden from API)
 	Platform hypershiftv1beta1.NodePoolPlatform `json:"platform"`
-	// Platform is service-set (platform-managed, hidden from API)
-	Platform hypershiftv1beta1.PlatformSpec `json:"platform"`
 	// PullSecret is service-set (platform-managed, hidden from API)
 	PullSecret corev1.LocalObjectReference `json:"pullSecret"`
-	// Release is service-set (platform-managed, hidden from API)
-	Release hypershiftv1beta1.Release `json:"release"`
 	// Release is service-set (platform-managed, hidden from API)
 	Release hypershiftv1beta1.Release `json:"release"`
 	// Replicas is service-set (platform-managed, hidden from API)

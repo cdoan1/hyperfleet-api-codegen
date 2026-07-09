@@ -2,8 +2,6 @@
 
 package rest
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 // NodePoolSpecPassthrough mirrors NodePoolSpec from upstream HyperShift
 type NodePoolSpecPassthrough struct {
 }

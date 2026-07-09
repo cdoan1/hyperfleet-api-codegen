@@ -15,7 +15,6 @@ func ProjectNodePool(crd *v1alpha1.NodePool) *rest.NodePool {
 	}
 
 	return &rest.NodePool{
-		ID:     string(crd.UID),
 		Spec:   projectNodePoolSpec(crd.Spec),
 		Status: projectNodePoolStatus(crd.Status),
 	}
@@ -24,7 +23,7 @@ func ProjectNodePool(crd *v1alpha1.NodePool) *rest.NodePool {
 // projectNodePoolSpec converts CRD NodePoolSpec to REST
 func projectNodePoolSpec(crd v1alpha1.NodePoolSpec) rest.NodePoolSpec {
 	return rest.NodePoolSpec{
-		ClusterRef: crd.ClusterRef,
+		ClusterRef: projectClusterReference(crd.ClusterRef),
 		DisplayName: crd.DisplayName,
 		AutoRepair: crd.AutoRepair,
 		Labels: crd.Labels,
@@ -51,7 +50,7 @@ func UnprojectNodePool(spec *rest.NodePoolSpec, enrichment *conversion.ServiceSe
 
 	crdSpec := &v1alpha1.NodePoolSpec{
 		// Visible fields from REST request
-		ClusterRef: spec.ClusterRef,
+		ClusterRef: unprojectClusterReference(spec.ClusterRef),
 		DisplayName: spec.DisplayName,
 		AutoRepair: spec.AutoRepair,
 		Labels: spec.Labels,
@@ -67,13 +66,29 @@ func UnprojectNodePool(spec *rest.NodePoolSpec, enrichment *conversion.ServiceSe
 	return crdSpec
 }
 
-// projectNodePoolSpecPassthrough converts CRD passthrough to REST
+// projectClusterReference converts CRD type to REST
+func projectClusterReference(crd v1alpha1.ClusterReference) rest.ClusterReference {
+	return rest.ClusterReference{
+		Name: crd.Name,
+		Namespace: crd.Namespace,
+	}
+}
+
+// unprojectClusterReference converts REST type to CRD
+func unprojectClusterReference(rest rest.ClusterReference) v1alpha1.ClusterReference {
+	return v1alpha1.ClusterReference{
+		Name: rest.Name,
+		Namespace: rest.Namespace,
+	}
+}
+
+// projectNodePoolSpecPassthrough converts CRD type to REST
 func projectNodePoolSpecPassthrough(crd v1alpha1.NodePoolSpecPassthrough) rest.NodePoolSpecPassthrough {
 	return rest.NodePoolSpecPassthrough{
 	}
 }
 
-// unprojectNodePoolSpecPassthrough converts REST passthrough to CRD
+// unprojectNodePoolSpecPassthrough converts REST type to CRD
 func unprojectNodePoolSpecPassthrough(rest rest.NodePoolSpecPassthrough) v1alpha1.NodePoolSpecPassthrough {
 	return v1alpha1.NodePoolSpecPassthrough{
 	}

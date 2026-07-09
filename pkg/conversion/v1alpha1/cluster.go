@@ -15,7 +15,6 @@ func ProjectCluster(crd *v1alpha1.Cluster) *rest.Cluster {
 	}
 
 	return &rest.Cluster{
-		ID:     string(crd.UID),
 		Spec:   projectClusterSpec(crd.Spec),
 		Status: projectClusterStatus(crd.Status),
 	}
@@ -72,13 +71,13 @@ func UnprojectCluster(spec *rest.ClusterSpec, enrichment *conversion.ServiceSetF
 	return crdSpec
 }
 
-// projectHostedClusterSpecPassthrough converts CRD passthrough to REST
+// projectHostedClusterSpecPassthrough converts CRD type to REST
 func projectHostedClusterSpecPassthrough(crd v1alpha1.HostedClusterSpecPassthrough) rest.HostedClusterSpecPassthrough {
 	return rest.HostedClusterSpecPassthrough{
 	}
 }
 
-// unprojectHostedClusterSpecPassthrough converts REST passthrough to CRD
+// unprojectHostedClusterSpecPassthrough converts REST type to CRD
 func unprojectHostedClusterSpecPassthrough(rest rest.HostedClusterSpecPassthrough) v1alpha1.HostedClusterSpecPassthrough {
 	return v1alpha1.HostedClusterSpecPassthrough{
 	}
