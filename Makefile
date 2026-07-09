@@ -341,5 +341,10 @@ ci-verify: $(MARKER_SCANNER) $(OPENAPI_GEN) ## CI verification that all passthro
 		echo "✓ All $$FIELD_COUNT passthrough fields have required markers"; \
 	fi
 
+.PHONY: test-hypershift-bump
+test-hypershift-bump: ## Test HyperShift version bump workflow (bumps to v0.1.72)
+	@echo "Running HyperShift version bump test..."
+	@.github/workflows/test-scripts/test-hypershift-bump.sh
+
 .PHONY: ci
 ci: deps test lint ci-verify ## Run all CI checks
