@@ -65,7 +65,7 @@ tidy: ## Run go mod tidy
 	$(GOMOD) tidy
 
 .PHONY: verify
-verify: fmt vet test ## Run all verification steps
+verify: fmt vet test verify-conversion ## Run all verification steps
 
 ##@ Code Generation
 
@@ -138,6 +138,28 @@ generate-conversion: $(CONVERSION_GEN) generate-registry ## Generate REST types 
 		--crd-package=github.com/cdoan1/hyperfleet-api-codegen/api/v1alpha1 \
 		--input-dirs=$(API_DIR) \
 		--output-dir=pkg/conversion/v1alpha1
+
+.PHONY: verify-conversion
+verify-conversion: $(CONVERSION_GEN) generate-registry ## Verify conversion code is up to date
+	@echo "Verifying conversion code is up to date..."
+	@mkdir -p /tmp/conversion-check
+	$(CONVERSION_GEN) \
+		--api-version=v1alpha1 \
+		--crd-package=github.com/cdoan1/hyperfleet-api-codegen/api/v1alpha1 \
+		--input-dirs=$(API_DIR) \
+		--output-dir=/tmp/conversion-check >/dev/null 2>&1
+	@diff -r pkg/conversion/v1alpha1 /tmp/conversion-check || ( \
+		echo "Error: conversion code is out of date"; \
+		echo "Run: make generate-conversion"; \
+		exit 1 \
+	)
+	@diff pkg/conversion/types.go /tmp/conversion-check/../types.go || ( \
+		echo "Error: ServiceSetFields (types.go) is out of date"; \
+		echo "Run: make generate-conversion"; \
+		exit 1 \
+	)
+	@rm -rf /tmp/conversion-check
+	@echo "✓ Conversion code is up to date"
 
 .PHONY: featuregate-info
 featuregate-info: ## Show feature gate registry and field counts per feature set
