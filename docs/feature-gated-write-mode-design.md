@@ -1,11 +1,40 @@
 # Feature-Gated Write-Mode Control
 
-**Status**: Design Proposal (REVISED)  
+**Status**: ✅ Implemented (2026-07-09)  
 **Jira**: [ROSAENG-61570](https://redhat.atlassian.net/browse/ROSAENG-61570)  
 **Author**: Chris Doan  
 **Date**: 2026-07-09 (Revised: 2026-07-09)  
-**Reviewers**: Lucas (reach out for detailed requirements)  
+**Implementation**: Commit fec5818 "Implement feature-gate-aware write-mode (ROSAENG-61570)"  
 **Related PR**: [openshift-online/rosa-hyperfleet#678](https://github.com/openshift-online/rosa-hyperfleet/pull/678/changes)
+
+---
+
+## Implementation Summary
+
+**Status**: Complete and ready for use
+
+The feature-gate-aware write-mode control is fully implemented and tested. Fields can now have different write-modes based on enabled feature gates.
+
+**What was implemented**:
+1. ✅ New marker syntax: `+hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="X",writeMode="Y"`
+2. ✅ Extended `FieldMeta` with `FeatureGateAwareWriteModes []FeatureGateWriteMode`
+3. ✅ Marker scanner parses multiple gate-based write-mode overrides
+4. ✅ Registry generators (Go + JSON) emit new field metadata
+5. ✅ Runtime validation determines effective write-mode from enabled gates
+6. ✅ Comprehensive tests (marker parsing + validation, 96.6% coverage)
+
+**Files modified**:
+- `pkg/markers/types.go` - Added `FeatureGateWriteMode` type
+- `pkg/markers/scanner.go` - Regex pattern + extraction logic
+- `pkg/markers/generator.go` - Updated Go template
+- `pkg/markers/json.go` - Updated JSON export
+- `pkg/validation/validator.go` - Effective mode resolution
+- `pkg/registry/field_metadata.go` - Generated with new types
+- Test files: `pkg/markers/gated_writemode_test.go`, `pkg/validation/gated_writemode_test.go`
+
+**Backward compatibility**: Existing fields without gated modes work unchanged. The feature can be adopted incrementally field-by-field.
+
+---
 
 ## Problem Statement
 

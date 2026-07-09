@@ -35,6 +35,28 @@ Go markers on fields control visibility, mutability, and entitlements:
 | `+k8s:openapi-gen=false` | **Visibility** | `true` (visible, default)<br/>`false` (hidden) | Controls whether field appears in OpenAPI schema |
 | `+hyperfleet:write-mode=X` | **Write Mode** | `mutable`<br/>`immutable`<br/>`service-set` | `mutable`: customer can set and change<br/>`immutable`: customer sets on create, cannot change<br/>`service-set`: platform fills it, customer cannot touch |
 | `+openshift:enable:FeatureGate=X` | **Feature Gate** | Feature set name | Controls per-customer entitlements (e.g., `TechPreviewNoUpgrade`) |
+| `+hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="X",writeMode="Y"` | **Gated Write Mode** | Multiple per field | Allows write-mode to vary based on enabled feature gates. Enables customer-tier-based field access control. See examples below. |
+
+**Feature-Gate-Aware Write-Mode Examples:**
+
+```go
+// GA field with customer-tier-based write-mode
+// Standard customers: immutable (set once on create)  
+// Premium customers: mutable (can change anytime)
+// +hyperfleet:write-mode=immutable
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="",writeMode="immutable"
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="PremiumFeature",writeMode="mutable"
+ReleaseChannel string `json:"releaseChannel"`
+
+// TechPreview field - default service-set, mutable when gated
+// +hyperfleet:write-mode=service-set
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="",writeMode="service-set"
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="HyperFleetEtcdConfig",writeMode="mutable"
+// +openshift:enable:FeatureGate=HyperFleetEtcdConfig
+Etcd *EtcdSpec `json:"etcd,omitempty"`
+```
+
+**Priority logic**: Specific gate match → default ("") → base WriteMode
 
 ## Documentation
 

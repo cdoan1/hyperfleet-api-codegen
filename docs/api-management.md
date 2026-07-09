@@ -159,26 +159,41 @@ func customerHasGate(customer Customer, gate string) bool {
 }
 ```
 
-#### Future: Feature-Gate-Aware Write-Mode (ROSAENG-61570)
+#### Feature-Gate-Aware Write-Mode (ROSAENG-61570) ✅
 
-Currently, feature gates only control **visibility** (whether a field exists in the API). A field's write-mode is fixed for all customers.
+Feature gates can now control both **visibility** and **write-mode**. A field's write-mode can vary based on the customer's enabled feature gates, enabling customer-tier-based field access control.
 
-**Planned enhancement**: Allow write-mode to vary based on customer's enabled feature gates. This enables:
+**Use cases**:
 - **Customer-tier control**: GA fields can have different write-modes for different subscription tiers
 - **Progressive rollout**: Start with `service-set` (platform-controlled) for most customers, then open up to `mutable` for premium/beta customers
+- **Feature-gated mutability**: TechPreview fields can be platform-managed by default, but customer-writable when the gate is enabled
 
-**Example** (not yet implemented):
+**Marker syntax**:
 ```go
 // GA field with customer-tier-based write-mode
-// Standard customers: immutable
-// Premium customers (with gate enabled): mutable
+// Standard customers: immutable (set once on create)
+// Premium customers: mutable (can change anytime)
 // +hyperfleet:write-mode=immutable
 // +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="",writeMode="immutable"
 // +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="PremiumFeature",writeMode="mutable"
 ReleaseChannel string `json:"releaseChannel"`
+
+// TechPreview field - default service-set, mutable when gated
+// +hyperfleet:write-mode=service-set
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="",writeMode="service-set"
+// +hyperfleet:validation:FeatureGateAwareWriteMode:featureGate="HyperFleetEtcdConfig",writeMode="mutable"
+// +openshift:enable:FeatureGate=HyperFleetEtcdConfig
+Etcd *EtcdSpec `json:"etcd,omitempty"`
 ```
 
-See [feature-gated-write-mode-design.md](./feature-gated-write-mode-design.md) for complete design.
+**Priority logic**: Specific gate match → default ("") → base WriteMode
+
+**Runtime validation**: The Platform API populates `Request.EnabledGates` based on the customer's feature set and per-account entitlements. The validator determines the effective write-mode by checking which gates are enabled:
+1. Check for specific gate match (e.g., "PremiumFeature")
+2. If no match, check for default override (empty string "")
+3. If neither, use base WriteMode
+
+See [feature-gated-write-mode-design.md](./feature-gated-write-mode-design.md) for complete design and implementation details.
 
 ### Generation Pipeline
 
