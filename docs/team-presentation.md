@@ -214,6 +214,30 @@ Response: 400 Bad Request
 }
 ```
 
+**Why HyperFleet-Owned Types?**
+
+We **cannot add markers to imported HyperShift types**:
+
+```go
+// ❌ Cannot do this - ClusterConfiguration is imported
+import hypershiftv1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
+
+// Cannot add per-field markers here!
+Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration,omitempty"`
+```
+
+**Solution**: Create **HyperFleet-owned mirror types** in `api/v1alpha1/configuration.go`:
+
+```go
+// ✅ Can do this - we own the type
+type ClusterConfiguration struct {
+    Kubelet *KubeletConfig `json:"kubelet,omitempty"`
+    MachineConfig *MachineConfigSpec `json:"machineConfig,omitempty"`
+}
+```
+
+This enables **granular control** on every nested field. See [docs/configuration-types-pattern.md](./configuration-types-pattern.md) for the full pattern and how to add future config types.
+
 ---
 
 ## Real Example: Machine Config Control
@@ -330,8 +354,8 @@ type MachineConfigSpec struct {
 
 2. **Marker Scanner & Field Registry** (ROSAENG-61389)
    - Extracts markers from Go types
-   - Generates `pkg/registry/field_registry.go`
-   - **58 fields tracked** with write-mode and feature gates
+   - Generates `pkg/registry/field_registry.go` and `field_registry.json`
+   - **162 fields tracked** with write-mode and feature gates (58 passthrough + 104 config)
 
 3. **OpenAPI Integration** (ROSAENG-61387)
    - Generates OpenAPI spec from Go types
@@ -339,7 +363,7 @@ type MachineConfigSpec struct {
    - Proper `$ref` expansion for nested types
 
 4. **Feature Gate Tooling**
-   - Registry of 4 example gates (1 GA, 2 TechPreview, 1 DevPreview)
+   - Registry of 6 gates (1 GA, 4 TechPreview, 1 DevPreview)
    - CRD variant generator (3 variants: Default/TechPreview/DevPreview)
    - Per-feature-set field counts: Default (32), TechPreview (35), DevPreview (35)
 
@@ -354,13 +378,32 @@ type MachineConfigSpec struct {
    - Shows only visible fields
    - Serves generated OpenAPI spec
 
+7. **Type Conversion Functions** (ROSAENG-61392)
+   - Auto-generated CRD ↔ REST converters
+   - ProjectCluster (strips hidden/service-set fields)
+   - UnprojectCluster (enriches with service-set fields)
+   - No hand-written conversion code
+
+8. **Configuration Types** (ROSAENG-61673)
+   - HyperFleet-owned KubeletConfig (23 fields with granular markers)
+   - HyperFleet-owned MachineConfigSpec (7 fields, security-focused)
+   - Enables per-field control on nested config (cannot mark imported HyperShift types)
+   - Pattern documented for adding future config types
+
+9. **CI Verification**
+   - AST-based tool enforces markers on hand-written config types
+   - Integrated into `make verify` and CI workflow
+   - Blocks commits missing required `+hyperfleet:write-mode` markers
+
 ### 📊 By the Numbers
 
-- **58 fields** tracked with metadata
-- **4 feature gates** defined
+- **162 fields** tracked with metadata (58 passthrough + 104 config)
+- **6 feature gates** defined (1 GA, 4 TechPreview, 1 DevPreview)
 - **3 CRD variants** generated per feature set
 - **0 lines** of field-specific validation code (all generic!)
 - **100%** CI coverage on marker verification
+- **23** kubelet fields with granular control (13 visible, 10 hidden)
+- **7** machine config fields (2 visible whitelist, 5 hidden for security)
 
 ---
 
@@ -657,57 +700,42 @@ Response: 201 Created
 
 ---
 
-## What's Next: Conversion Functions
+## What's Next: CRD Client-Side Validation
 
-### Current Gap: Platform API → K8s CRD
+### Current State: Platform API Validation
 
 ```
-Customer REST Request → Platform API → ??? → K8s CRD → HyperShift
+Customer REST Request → Platform API → Validate → K8s CRD → HyperShift
+                                  ↓
+                          ✅ Write-mode enforced
+                          ✅ Feature gates checked
 ```
 
-**Missing piece**: Type conversion functions
+**Working**: Platform API validates before submitting to K8s.
 
-### Next Sprint: Implement Conversions
+### Next Phase: CRD Client-Side Validation
 
-**1. REST → CRD** (Enrich with service-set fields):
+**Goal**: Add validation **at the CRD level** for defense-in-depth.
 
-```go
-// pkg/conversion/cluster.go
-
-func UnprojectCluster(restCluster map[string]interface{}, ctx ServiceContext) (*v1alpha1.Cluster, error) {
-    crd := &v1alpha1.Cluster{}
-    
-    // Copy customer-provided fields
-    crd.Spec.Name = restCluster["name"]
-    crd.Spec.Kubelet = restCluster["kubelet"]
-    
-    // Enrich with service-set fields (platform provides)
-    crd.Spec.AccountID = ctx.AccountID       // From auth token
-    crd.Spec.CreatorARN = ctx.CreatorARN     // From AWS STS
-    crd.Spec.Region = ctx.Region             // From endpoint
-    
-    return crd, nil
-}
+```
+Customer K8s Request → CRD Webhook → Validate → HyperShift
+                                ↓
+                        ✅ Schema validation
+                        ✅ Write-mode enforcement
+                        ✅ Feature gate checks
 ```
 
-**2. CRD → REST** (Strip hidden/service-set fields):
+**Why**: 
+- Defense-in-depth (validate at both Platform API and K8s layers)
+- Protects against direct K8s API access (if ever allowed)
+- Consistent validation across all entry points
 
-```go
-func ProjectCluster(crd *v1alpha1.Cluster) (map[string]interface{}, error) {
-    result := make(map[string]interface{})
-    
-    // Copy visible fields only
-    result["name"] = crd.Spec.Name
-    result["kubelet"] = crd.Spec.Kubelet
-    
-    // Strip hidden fields (accountID, creatorARN never returned)
-    // Strip service-set fields (region never returned)
-    
-    return result, nil
-}
-```
+**Implementation**: 
+- Kubernetes ValidatingWebhookConfiguration
+- Uses same field metadata registry
+- See [docs/crd-client-validation.md](./crd-client-validation.md) for design
 
-**Timeline**: 1-2 weeks, unblocks Platform API implementation
+**Timeline**: Future work (ROSAENG-61569)
 
 ---
 

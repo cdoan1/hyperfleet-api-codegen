@@ -67,7 +67,7 @@ Etcd *EtcdSpec `json:"etcd,omitempty"`
 ## Components
 
 ### 1. Passthrough Generator
-Reads HyperShift types and generates HyperFleet passthrough structs with safe defaults. **Preserves existing marker annotations on regeneration** using the field metadata registry.
+Reads HyperShift types and generates HyperFleet passthrough structs with safe defaults. **Preserves existing marker annotations on regeneration** using the field metadata registry. New fields default to hidden + service-set until explicitly reviewed.
 
 **Marker Preservation:**
 When regenerating passthrough types (e.g., after bumping HyperShift version):
@@ -91,6 +91,12 @@ Auto-generates bidirectional conversion functions between CRD and REST types.
 ### 6. Runtime Validator
 Generic validation using field metadata registry to enforce write-mode and feature gate rules.
 
+### 7. Configuration Types
+HyperFleet-owned types (`KubeletConfig`, `MachineConfigSpec`) enable granular marker control on nested fields that cannot be marked when imported from HyperShift. See [docs/configuration-types-pattern.md](docs/configuration-types-pattern.md).
+
+### 8. CI Verification
+AST-based tool (`cmd/verify-configuration`) enforces that all hand-written configuration type fields have required `+hyperfleet:write-mode` markers. Runs automatically in CI on every commit.
+
 ---
 
 ## Quick Start
@@ -106,13 +112,15 @@ This builds:
 - `bin/passthrough-gen` - Generate passthrough types from upstream Go code with marker preservation
 - `bin/openapi-gen` - Generate OpenAPI schema from Go types
 - `bin/featuregate-info` - Display feature gate registry and field counts per feature set
+- `bin/conversion-gen` - Generate bidirectional type conversion functions (CRD ↔ REST)
+- `bin/verify-configuration` - Verify all configuration type fields have required markers
 
 ### Marker Scanner
 
 Scan the actual HyperFleet API types and generate a field registry:
 
 ```bash
-# Scan current API types (58 fields tracked)
+# Scan current API types (162 fields tracked)
 ./bin/marker-scanner \
   --input-dirs=./api/v1alpha1 \
   --output-file=/tmp/field_metadata.go \
@@ -124,6 +132,7 @@ Output shows:
 - Summary statistics (mutable/immutable/service-set counts)
 - Visibility breakdown (visible vs hidden fields)
 - Generates both `.go` file (for Go consumers) and `.json` file (for tooling)
+- Includes passthrough fields (58) and configuration type fields (104)
 
 For teaching examples, see [examples/README.md](examples/README.md) which has simple demonstration types.
 
@@ -160,7 +169,33 @@ make generate-passthrough
    make generate-registry generate-openapi
    ```
 
-Currently exposed fields: 11 visible in Default feature set (see `make featuregate-info` for breakdown)
+Currently exposed fields: 32 visible in Default feature set (see `make featuregate-info` for breakdown)
+
+**Configuration Types** (NEW - granular control):
+
+For nested configuration like kubelet and machine config, we use **HyperFleet-owned mirror types** instead of importing from HyperShift. This enables per-field markers:
+
+```go
+// api/v1alpha1/configuration.go
+
+type KubeletConfig struct {
+    // Customer-visible, mutable
+    // +hyperfleet:write-mode=mutable
+    MaxPods *int32 `json:"maxPods,omitempty"`
+    
+    // Platform-managed, hidden
+    // +k8s:openapi-gen=false
+    // +hyperfleet:write-mode=service-set
+    EvictionHard map[string]string `json:"evictionHard,omitempty"`
+    
+    // Feature-gated (TechPreview)
+    // +openshift:enable:FeatureGate=HyperFleetKubeletAdvanced
+    // +hyperfleet:write-mode=mutable
+    SerializeImagePulls *bool `json:"serializeImagePulls,omitempty"`
+}
+```
+
+See [docs/configuration-types-pattern.md](docs/configuration-types-pattern.md) for the pattern and how to add new configuration types.
 
 **3. Bumping HyperShift version:**
 
@@ -356,7 +391,7 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 🚧 **Proof of Concept** - Active development
 
 **Completed:**
-- ✅ Marker scanner with field registry generator - 58 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
+- ✅ Marker scanner with field registry generator - 162 fields tracked ([ROSAENG-61389](https://redhat.atlassian.net/browse/ROSAENG-61389))
 - ✅ Passthrough type generator - go.mod-based with proper imports ([ROSAENG-61384](https://redhat.atlassian.net/browse/ROSAENG-61384))
 - ✅ Marker preservation - registry-based marker persistence across regenerations
 - ✅ OpenAPI generator with $ref support - proper type expansion ([ROSAENG-61387](https://redhat.atlassian.net/browse/ROSAENG-61387))
@@ -365,22 +400,30 @@ See [swagger-ui/README.md](swagger-ui/README.md) for more details.
 - ✅ Feature gate tooling - registry, filtering, and per-feature-set field counts
 - ✅ Runtime validation - generic enforcement of write-mode and feature gate rules
 - ✅ CRD variant generator - produces feature-set-specific CRD YAML
+- ✅ Type conversion functions - auto-generated CRD ↔ REST converters ([ROSAENG-61392](https://redhat.atlassian.net/browse/ROSAENG-61392))
+- ✅ Configuration types - granular kubelet and machine config control ([ROSAENG-61673](https://redhat.atlassian.net/browse/ROSAENG-61673))
+- ✅ CI verification - enforces markers on hand-written configuration types
 
 **What Works:**
 - Generate passthrough types from HyperShift v0.1.70
 - All fields start hidden (safe defaults)
 - Marker preservation across regenerations via JSON registry
 - Developers curate which fields to expose
-- Field metadata registry tracks all 58 fields (4 feature-gated)
-- Feature gate registry with 4 gates (1 GA, 2 TechPreview, 1 DevPreview)
-- Per-feature-set field filtering (Default: 11 visible, TechPreview: 12 visible, DevPreview: 12 visible)
+- Field metadata registry tracks all **162 fields** (7 feature-gated)
+- Feature gate registry with **6 gates** (1 GA, 4 TechPreview, 1 DevPreview)
+- Per-feature-set field filtering (Default: 32 visible, TechPreview: 35 visible, DevPreview: 35 visible)
 - OpenAPI schema properly expands nested types with $ref
 - Swagger UI allows interactive browsing
 - Runtime validation enforces write-mode (mutable/immutable/service-set) and feature gates
 - CRD variants per feature set (Default/TechPreview/DevPreview)
+- **HyperFleet-owned configuration types** enable granular control:
+  - **KubeletConfig**: 23 fields (13 visible, 10 hidden) with per-field markers
+  - **MachineConfigSpec**: 7 fields (2 visible, 5 hidden) with security-focused whitelist
+- **Auto-generated type conversions**: ProjectCluster (CRD→REST), UnprojectCluster (REST→CRD with service-set enrichment)
+- **CI verification tool**: AST-based enforcement of markers on all configuration fields
 
 **Future Work:**
-- Auto-generated type conversion functions (CRD ↔ REST)
+- CRD client-side validation ([ROSAENG-61569](https://redhat.atlassian.net/browse/ROSAENG-61569))
 
 See [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383) for full implementation tracking.
 
