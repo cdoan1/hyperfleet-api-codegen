@@ -2,7 +2,9 @@
 
 package rest
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // ClusterStatus defines the observed state of a Cluster
 type ClusterStatus struct {

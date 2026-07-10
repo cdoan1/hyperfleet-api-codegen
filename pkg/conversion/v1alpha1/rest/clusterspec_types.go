@@ -2,7 +2,9 @@
 
 package rest
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // ClusterSpec defines the desired state of a Cluster
 type ClusterSpec struct {

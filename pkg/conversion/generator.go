@@ -254,6 +254,42 @@ func (g *Generator) exprToString(expr ast.Expr) string {
 	}
 }
 
+// qualifyType adds package qualifiers to unqualified types that need them
+func (g *Generator) qualifyType(goType string) string {
+	// List of v1alpha1 types that need qualification when used in REST package
+	v1alpha1Types := []string{
+		"ClusterConfiguration",
+		"KubeletConfig",
+		"MachineConfigSpec",
+		"APIServerNetworkConfiguration",
+		"ClusterAuthentication",
+		"FeatureGateConfiguration",
+		"ImageConfiguration",
+		"IngressConfiguration",
+		"NetworkConfiguration",
+		"OAuthConfiguration",
+		"SchedulerConfiguration",
+		"ProxyConfiguration",
+	}
+
+	// Handle pointer types
+	isPointer := strings.HasPrefix(goType, "*")
+	baseType := strings.TrimPrefix(goType, "*")
+
+	// Check if this is a v1alpha1 type that needs qualification
+	for _, t := range v1alpha1Types {
+		if baseType == t {
+			if isPointer {
+				return "*v1alpha1." + baseType
+			}
+			return "v1alpha1." + baseType
+		}
+	}
+
+	// Return as-is if already qualified or doesn't need qualification
+	return goType
+}
+
 // generateRESTTypes generates REST type definitions (Phase 1)
 func (g *Generator) generateRESTTypes() error {
 	restDir := filepath.Join(g.OutputDir, "rest")
@@ -316,16 +352,67 @@ func (g *Generator) generateRESTType(ti *typeInfo) string {
 		}
 	}
 
-	// Check if we need metav1 import (based on VISIBLE fields only)
+	// Check which imports we need (based on VISIBLE fields only)
 	needsMetav1 := false
+	needsHyperShift := false
+	needsV1alpha1 := false
+
 	for _, fi := range visibleFields {
-		if strings.Contains(fi.GoType, "metav1.") {
+		goType := fi.GoType
+		// Strip pointer and slice markers to get base type
+		goType = strings.TrimPrefix(goType, "*")
+		goType = strings.TrimPrefix(goType, "[]")
+
+		// Check for already-qualified types
+		if strings.Contains(goType, "metav1.") {
 			needsMetav1 = true
-			break
+		}
+		if strings.Contains(goType, "hypershiftv1beta1.") {
+			needsHyperShift = true
+		}
+		if strings.Contains(goType, "v1alpha1.") {
+			needsV1alpha1 = true
+		}
+
+		// Check for unqualified types that need imports
+		// HyperShift types (check against known HyperShift type names)
+		hypershiftTypes := []string{"AutoNode", "Release", "PlatformSpec", "DNSSpec", "ClusterNetworking",
+			"ClusterAutoscaling", "EtcdSpec", "ServicePublishingStrategyMapping", "ImageContentSource",
+			"SecretEncryptionSpec", "OLMCatalogPlacement", "Capabilities", "OperatorConfiguration",
+			"NodePoolPlatform", "NodePoolManagement", "NodePoolAutoScaling", "Taint", "AvailabilityPolicy"}
+		for _, t := range hypershiftTypes {
+			if goType == t {
+				needsHyperShift = true
+				break
+			}
+		}
+
+		// v1alpha1 types
+		v1alpha1Types := []string{"ClusterConfiguration", "KubeletConfig", "MachineConfigSpec",
+			"APIServerNetworkConfiguration", "ClusterAuthentication", "FeatureGateConfiguration",
+			"ImageConfiguration", "IngressConfiguration", "NetworkConfiguration",
+			"OAuthConfiguration", "SchedulerConfiguration", "ProxyConfiguration"}
+		for _, t := range v1alpha1Types {
+			if goType == t {
+				needsV1alpha1 = true
+				break
+			}
 		}
 	}
-	if needsMetav1 {
-		b.WriteString("import metav1 \"k8s.io/apimachinery/pkg/apis/meta/v1\"\n\n")
+
+	// Write imports
+	if needsMetav1 || needsHyperShift || needsV1alpha1 {
+		b.WriteString("import (\n")
+		if needsHyperShift {
+			b.WriteString("\thypershiftv1beta1 \"github.com/openshift/hypershift/api/hypershift/v1beta1\"\n")
+		}
+		if needsMetav1 {
+			b.WriteString("\tmetav1 \"k8s.io/apimachinery/pkg/apis/meta/v1\"\n")
+		}
+		if needsV1alpha1 {
+			fmt.Fprintf(&b, "\tv1alpha1 \"%s\"\n", g.CRDPackage)
+		}
+		b.WriteString(")\n\n")
 	}
 
 	// Type comment
@@ -376,8 +463,9 @@ func (g *Generator) generateRESTType(ti *typeInfo) string {
 			}
 		}
 
-		// Field definition
-		fmt.Fprintf(&b, "\t%s %s `json:\"%s\"`\n", fi.GoName, fi.GoType, jsonTag)
+		// Field definition - qualify type if needed
+		goType := g.qualifyType(fi.GoType)
+		fmt.Fprintf(&b, "\t%s %s `json:\"%s\"`\n", fi.GoName, goType, jsonTag)
 	}
 
 	b.WriteString("}\n")
@@ -452,6 +540,7 @@ func (g *Generator) generateServiceSetFields() error {
 	b.WriteString("\tconfigv1 \"github.com/openshift/api/config/v1\"\n")
 	b.WriteString("\tmetav1 \"k8s.io/apimachinery/pkg/apis/meta/v1\"\n")
 	b.WriteString("\thypershiftv1beta1 \"github.com/openshift/hypershift/api/hypershift/v1beta1\"\n")
+	fmt.Fprintf(&b, "\tv1alpha1 \"%s\"\n", g.CRDPackage)
 	b.WriteString(")\n\n")
 
 	b.WriteString("// ServiceSetFields contains platform-managed fields injected during UnprojectX conversions\n")
@@ -459,7 +548,8 @@ func (g *Generator) generateServiceSetFields() error {
 
 	for _, f := range fields {
 		fmt.Fprintf(&b, "\t// %s is service-set (platform-managed, hidden from API)\n", f.GoName)
-		fmt.Fprintf(&b, "\t%s %s `json:\"%s\"`\n", f.GoName, f.GoType, f.JSONTag)
+		goType := g.qualifyType(f.GoType)
+		fmt.Fprintf(&b, "\t%s %s `json:\"%s\"`\n", f.GoName, goType, f.JSONTag)
 	}
 
 	b.WriteString("}\n")
