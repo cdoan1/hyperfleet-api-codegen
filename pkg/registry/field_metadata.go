@@ -129,7 +129,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.etcd": {
 		FieldPath: "spec.hostedCluster.etcd",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.fips": {
 		FieldPath: "spec.hostedCluster.fips",
@@ -184,12 +183,10 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.operatorConfiguration": {
 		FieldPath: "spec.hostedCluster.operatorConfiguration",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.pausedUntil": {
 		FieldPath: "spec.hostedCluster.pausedUntil",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.platform": {
 		FieldPath: "spec.hostedCluster.platform",

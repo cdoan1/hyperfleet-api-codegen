@@ -132,7 +132,24 @@
     },
     "HostedClusterSpecPassthrough": {
       "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
-      "type": "object"
+      "type": "object",
+      "required": [
+        "etcd"
+      ],
+      "properties": {
+        "etcd": {
+          "description": "etcd specifies configuration for the control plane etcd cluster. The\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "object"
+        },
+        "operatorConfiguration": {
+          "description": "operatorConfiguration specifies configuration for individual OCP operators in the cluster.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "object"
+        },
+        "pausedUntil": {
+          "description": "pausedUntil is a field that can be used to pause reconciliation on the HostedCluster controller, resulting in any change to the HostedCluster being ignored.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "string"
+        }
+      }
     },
     "NodePool": {
       "description": "NodePool represents a HyperFleet managed NodePool for a cluster\n+kubebuilder:object:root=true\n+kubebuilder:subresource:status\n+kubebuilder:resource:scope=Namespaced",

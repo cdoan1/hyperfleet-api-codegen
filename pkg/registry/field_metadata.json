@@ -82,8 +82,7 @@
   },
   {
     "fieldPath": "spec.hostedCluster.etcd",
-    "writeMode": "service-set",
-    "hidden": true
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.fips",
@@ -137,13 +136,11 @@
   },
   {
     "fieldPath": "spec.hostedCluster.operatorConfiguration",
-    "writeMode": "service-set",
-    "hidden": true
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.pausedUntil",
-    "writeMode": "service-set",
-    "hidden": true
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.platform",
