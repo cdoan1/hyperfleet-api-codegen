@@ -338,6 +338,10 @@
     "hidden": true
   },
   {
+    "fieldPath": "spec.hostedCluster.configuration",
+    "writeMode": "service-set"
+  },
+  {
     "fieldPath": "spec.hostedCluster.configuration.apiServer",
     "writeMode": "service-set",
     "hidden": true

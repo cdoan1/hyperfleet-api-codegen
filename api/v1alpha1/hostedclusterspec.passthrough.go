@@ -93,6 +93,7 @@ type HostedClusterSpecPassthrough struct {
 	ServiceAccountSigningKey *corev1.LocalObjectReference `json:"serviceAccountSigningKey,omitempty"`
 	// configuration specifies configuration for individual OCP components in the cluster.
 	// Uses HyperFleet-owned types to enable granular marker control on nested fields.
+	// +hyperfleet:write-mode=service-set
 	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
 	// operatorConfiguration specifies configuration for individual OCP operators in the cluster.
 	// +hyperfleet:write-mode=service-set

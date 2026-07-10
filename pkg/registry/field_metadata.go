@@ -383,6 +383,10 @@ var FieldRegistry = map[string]FieldMeta{
 		WriteMode: ServiceSet,
 		Hidden:    true,
 	},
+	"spec.hostedCluster.configuration": {
+		FieldPath: "spec.hostedCluster.configuration",
+		WriteMode: ServiceSet,
+	},
 	"spec.hostedCluster.configuration.apiServer": {
 		FieldPath: "spec.hostedCluster.configuration.apiServer",
 		WriteMode: ServiceSet,
