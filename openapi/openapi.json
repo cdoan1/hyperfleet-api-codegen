@@ -133,20 +133,17 @@
     "HostedClusterSpecPassthrough": {
       "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
       "type": "object",
-      "required": [
-        "etcd"
-      ],
       "properties": {
-        "etcd": {
-          "description": "etcd specifies configuration for the control plane etcd cluster. The\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+        "autoNode": {
+          "description": "autoNode specifies the configuration for the autoNode feature.\n+hyperfleet:write-mode=service-set",
           "type": "object"
         },
         "operatorConfiguration": {
-          "description": "operatorConfiguration specifies configuration for individual OCP operators in the cluster.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "description": "operatorConfiguration specifies configuration for individual OCP operators in the cluster.\n+hyperfleet:write-mode=service-set",
           "type": "object"
         },
         "pausedUntil": {
-          "description": "pausedUntil is a field that can be used to pause reconciliation on the HostedCluster controller, resulting in any change to the HostedCluster being ignored.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "description": "pausedUntil is a field that can be used to pause reconciliation on the HostedCluster controller, resulting in any change to the HostedCluster being ignored.\n+hyperfleet:write-mode=service-set",
           "type": "string"
         }
       }

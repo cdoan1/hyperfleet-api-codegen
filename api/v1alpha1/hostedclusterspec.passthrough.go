@@ -64,11 +64,10 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	Autoscaling hypershiftv1beta1.ClusterAutoscaling `json:"autoscaling,omitempty"`
 	// autoNode specifies the configuration for the autoNode feature.
-	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set
 	AutoNode *hypershiftv1beta1.AutoNode `json:"autoNode,omitempty"`
 	// etcd specifies configuration for the control plane etcd cluster. The
-	// +k8s:openapi-gen=true
+	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set
 	Etcd hypershiftv1beta1.EtcdSpec `json:"etcd"`
 	// services specifies how individual control plane services endpoints are published for consumption.
@@ -96,7 +95,6 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration,omitempty"`
 	// operatorConfiguration specifies configuration for individual OCP operators in the cluster.
-	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	OperatorConfiguration *hypershiftv1beta1.OperatorConfiguration `json:"operatorConfiguration,omitempty"`
 	// auditWebhook contains metadata for configuring an audit webhook endpoint
@@ -120,7 +118,6 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	FIPS bool `json:"fips"`
 	// pausedUntil is a field that can be used to pause reconciliation on the HostedCluster controller, resulting in any change to the HostedCluster being ignored.
-	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	PausedUntil *string `json:"pausedUntil,omitempty"`
 	// olmCatalogPlacement specifies the placement of OLM catalog components. By default,

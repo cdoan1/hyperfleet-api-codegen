@@ -37,8 +37,7 @@
   },
   {
     "fieldPath": "spec.hostedCluster.autoNode",
-    "writeMode": "service-set",
-    "hidden": true
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.autoscaling",
@@ -82,7 +81,8 @@
   },
   {
     "fieldPath": "spec.hostedCluster.etcd",
-    "writeMode": "service-set"
+    "writeMode": "service-set",
+    "hidden": true
   },
   {
     "fieldPath": "spec.hostedCluster.fips",

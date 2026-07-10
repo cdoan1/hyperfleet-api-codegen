@@ -84,7 +84,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.autoNode": {
 		FieldPath: "spec.hostedCluster.autoNode",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.autoscaling": {
 		FieldPath: "spec.hostedCluster.autoscaling",
@@ -129,6 +128,7 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.etcd": {
 		FieldPath: "spec.hostedCluster.etcd",
 		WriteMode: ServiceSet,
+		Hidden:    true,
 	},
 	"spec.hostedCluster.fips": {
 		FieldPath: "spec.hostedCluster.fips",
