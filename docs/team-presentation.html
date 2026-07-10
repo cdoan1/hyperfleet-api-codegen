@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperFleet API Management POC</title>
+
+    <!-- Reveal.js CSS from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/night.css">
+
+    <!-- Code highlighting theme -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/highlight/monokai.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom typography and polish */
+        .reveal {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 32px;
+        }
+
+        .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+            font-weight: 700;
+            text-transform: none;
+            letter-spacing: -0.02em;
+        }
+
+        .reveal h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .reveal h2 {
+            font-size: 1.8em;
+            margin-bottom: 0.8em;
+        }
+
+        .reveal h3 {
+            font-size: 1.4em;
+            margin-bottom: 0.6em;
+            color: #58a6ff;
+        }
+
+        .reveal code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+
+        .reveal pre {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin: 1em 0;
+        }
+
+        .reveal pre code {
+            padding: 1.5em;
+            border-radius: 8px;
+            max-height: 500px;
+            font-size: 0.65em;
+            line-height: 1.4;
+        }
+
+        .reveal ul, .reveal ol {
+            margin: 0.5em 0;
+        }
+
+        .reveal li {
+            margin: 0.4em 0;
+        }
+
+        .reveal blockquote {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #58a6ff;
+            padding: 1em;
+            font-style: normal;
+            border-radius: 4px;
+        }
+
+        .reveal table {
+            font-size: 0.8em;
+            border-collapse: collapse;
+            margin: 1em auto;
+        }
+
+        .reveal table th {
+            background: rgba(88, 166, 255, 0.3);
+            padding: 0.6em;
+            border-bottom: 2px solid #58a6ff;
+        }
+
+        .reveal table td {
+            padding: 0.6em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reveal .emoji {
+            font-style: normal;
+        }
+
+        /* Status badges */
+        .reveal .badge {
+            display: inline-block;
+            padding: 0.2em 0.6em;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin: 0 0.2em;
+        }
+
+        .reveal .badge.success {
+            background: #238636;
+            color: white;
+        }
+
+        .reveal .badge.error {
+            background: #da3633;
+            color: white;
+        }
+
+        .reveal .badge.warning {
+            background: #9e6a03;
+            color: white;
+        }
+
+        /* Slide number styling */
+        .reveal .slide-number {
+            font-size: 0.6em;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        /* Custom spacing for code examples */
+        .reveal .code-example {
+            margin: 1.5em 0;
+        }
+
+        /* Diagram styling */
+        .reveal .diagram {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.5em;
+            line-height: 1.3;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1em;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section data-markdown data-separator="^\n---\n$" data-separator-vertical="^\n--\n$">
+                <textarea data-template>
+# HyperFleet API Management POC
+## Controlling What We Expose and What Customers Can Set
+
+**Date**: 2026-07-10<br>
+**Epic**: [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383)<br>
+**Repo**: [github.com/cdoan1/hyperfleet-api-codegen](https://github.com/cdoan1/hyperfleet-api-codegen)
+
+---
+
+## The Problem We Solved
+
+### Before: No Control Over Passthrough Fields
+
+HyperShift exposes **hundreds of fields** in `HostedCluster` and `NodePool`:
+- Kubelet config (PID limits, reserved resources, eviction thresholds)
+- Machine config (kernel parameters, systemd units, file writes)
+- Network config (CNI settings, proxy configuration)
+- Security config (FIPS mode, audit policies, secrets encryption)
+
+--
+
+### Questions We Couldn't Answer
+
+- ❌ Which fields should customers see?
+- ❌ Which fields can customers modify?
+- ❌ Which fields are platform-managed?
+- ❌ Which fields require beta/alpha feature gates?
+- ❌ How do we validate customer input before submitting to K8s?
+
+--
+
+### The Vision
+
+**"Realization of the Intent to Passthrough"**
+
+Selectively expose upstream HyperShift fields while maintaining **granular control** over:
+
+1. **Visibility** - Does the customer see this field in the API?
+2. **Mutability** - Can the customer set or change this field?
+3. **Entitlement** - Does the customer's tier allow access to this field?
+
+---
+
+## Three Control Markers
+
+A single source of truth in **Go types with markers**
+
+--
+
+### 1. Visibility Marker
+`+k8s:openapi-gen=false`
+
+**Controls**: Whether a field appears in the customer-facing API
+
+```go
+type ClusterSpec struct {
+    // ✅ VISIBLE - Customers see this in API docs
+    DisplayName string `json:"displayName,omitempty"`
+
+    // ❌ HIDDEN - Platform-internal
+    // +k8s:openapi-gen=false
+    AccountID string `json:"accountId"`
+}
+```
+
+--
+
+### 2. Write-Mode Marker
+`+hyperfleet:write-mode=X`
+
+**Controls**: Whether customers can set or change a field
+
+| Mode | Create | Update | Example |
+|------|--------|--------|---------|
+| **mutable** | ✅ | ✅ | `deleteProtection` |
+| **immutable** | ✅ | ❌ | `name` |
+| **service-set** | ❌ | ❌ | `region`, `accountId` |
+
+--
+
+### 3. Feature Gate Marker
+`+openshift:enable:FeatureGate=X`
+
+**Controls**: Per-customer field entitlements
+
+**Feature Hierarchy** (inclusive):
+```
+DevPreview ⊃ TechPreview ⊃ Default (GA)
+```
+
+**Result**:
+- Default customers: 32 fields
+- TechPreview customers: 35 fields (+3)
+- DevPreview customers: 35 fields (+3)
+
+---
+
+## Real Example: Kubelet Config
+
+### HyperFleet-Owned Types
+
+We **cannot add markers to imported HyperShift types**
+
+**Solution**: Create HyperFleet-owned mirror types
+
+```go
+type ClusterConfiguration struct {
+    Kubelet *KubeletConfig `json:"kubelet,omitempty"`
+    MachineConfig *MachineConfigSpec `json:"machineConfig,omitempty"`
+}
+```
+
+This enables **granular control** on every nested field
+
+--
+
+### Selective Exposure with Control
+
+```go
+type KubeletConfig struct {
+    // ✅ VISIBLE + MUTABLE
+    // +hyperfleet:write-mode=mutable
+    PodPidsLimit *int64 `json:"podPidsLimit,omitempty"`
+
+    // ✅ VISIBLE + IMMUTABLE
+    // +hyperfleet:write-mode=immutable
+    SystemReserved map[string]string `json:"systemReserved,omitempty"`
+
+    // ❌ HIDDEN + SERVICE-SET
+    // +k8s:openapi-gen=false
+    // +hyperfleet:write-mode=service-set
+    EvictionHard map[string]string `json:"evictionHard,omitempty"`
+}
+```
+
+--
+
+### Customer Experience
+
+```bash
+# ❌ Trying to set evictionHard (hidden field)
+POST /clusters
+{
+  "spec": {
+    "kubelet": {
+      "evictionHard": {"memory.available": "50Mi"}
+    }
+  }
+}
+
+Response: 400 Bad Request
+{
+  "error": "field spec.kubelet.evictionHard is
+   platform-managed (service-set)"
+}
+```
+
+---
+
+## Machine Config Control
+
+### Security-Focused Whitelist
+
+```go
+type MachineConfigSpec struct {
+    // ✅ TECH PREVIEW - Allowed kernel params
+    // +openshift:enable:FeatureGate=HyperFleetMachineConfig
+    // +hyperfleet:write-mode=immutable
+    AllowedKernelArguments []string
+
+    // ❌ HIDDEN - Platform manages systemd
+    // +k8s:openapi-gen=false
+    // +hyperfleet:write-mode=service-set
+    SystemdUnits []SystemdUnit
+}
+```
+
+**Result**: Safe kernel params allowed, dangerous configs blocked
+
+---
+
+## Architecture
+
+### Single Source of Truth
+
+
+<pre class="diagram">
+┌─────────────────────────────┐
+│   Go Types with Markers     │
+│  +k8s:openapi-gen=false     │
+│  +hyperfleet:write-mode=X   │
+│  +openshift:enable:Gate=Y   │
+└──────────────┬──────────────┘
+               │
+    ┌──────────┴──────────┐
+    ▼                     ▼
+┌─────────────────┐  ┌─────────────────┐
+│ Marker Scanner  │  │ OpenAPI         │
+│ Generates       │  │ Generator       │
+│ Registry        │  │                 │
+└────────┬────────┘  └────────┬────────┘
+         ▼                    ▼
+┌─────────────────┐  ┌─────────────────┐
+│ Field Metadata  │  │ OpenAPI Spec    │
+│ Registry        │  │ (swagger.json)  │
+└────────┬────────┘  └─────────────────┘
+         ▼
+┌─────────────────┐
+│ Runtime         │
+│ Validator       │
+└─────────────────┘
+</pre>
+
+**Key Insight**: Change a marker → regenerate → everything updates
+
+---
+
+## What We Built
+
+### ✅ Completed Components
+
+1. **Passthrough Generator** - Mirrors HyperShift types with safe defaults
+2. **Marker Scanner** - 163 fields tracked
+3. **OpenAPI Integration** - Visibility-aware schema
+4. **Feature Gate Tooling** - 6 gates, 3 CRD variants
+5. **Runtime Validation** - Generic, zero field-specific code
+6. **Type Conversions** - Auto-generated CRD ↔ REST
+7. **Configuration Types** - Granular kubelet/machine config control
+8. **CI Verification** - AST-based marker enforcement
+
+--
+
+### 📊 By the Numbers
+
+- **163 fields** tracked (58 passthrough + 105 config)
+- **6 feature gates** (1 GA, 4 TechPreview, 1 DevPreview)
+- **3 CRD variants** per feature set
+- **0 lines** of field-specific validation code
+- **100%** CI coverage on marker verification
+- **23** kubelet fields (13 visible, 10 hidden)
+- **7** machine config fields (2 visible, 5 hidden)
+
+---
+
+## Validation Flow
+
+### Example: Invalid Fields
+
+```bash
+POST /api/v1/clusters
+{
+  "spec": {
+    "name": "prod-cluster",         # ✅ Immutable, OK
+    "region": "us-west-2",          # ❌ Service-set
+    "kubelet": {
+      "podPidsLimit": 8192,         # ✅ Mutable, OK
+      "evictionHard": {...}         # ❌ Service-set
+    },
+    "autoScaling": {...}            # ❌ Requires gate
+  }
+}
+```
+
+--
+
+### Platform API Process
+
+1. **Lookup Account** from DynamoDB
+   - accountId, featureSet, enabledGates
+
+2. **Runtime Validator** checks each field
+   - Write-mode enforcement
+   - Feature gate verification
+
+3. **Return 400** with detailed errors
+   - OR enrich with service-set fields and submit
+
+---
+
+## Key Benefits
+
+### 1. Declarative Control
+
+**Before**: Hard-coded validation per field (58+ if statements)
+
+**After**: Markers on types + generic validator
+
+**Result**: Add 100 new fields → 0 lines of validation code
+
+--
+
+### 2. Production Workflow
+
+```bash
+# HyperShift adds new field
+go get github.com/openshift/hypershift/api@v0.1.71
+
+# Regenerate (gets safe defaults)
+make generate-passthrough
+
+# Review and update markers
+# +hyperfleet:write-mode=mutable
+
+# Regenerate downstream
+make manifests openapi generate-registry
+```
+
+**Result**: Field visible, customers can set it, validation enforces
+
+--
+
+### 3. Feature Gate Promotion
+
+```go
+// One-line change
+"HyperFleetAutoScaling": {Stage: GA}
+
+// Regenerate
+make manifests
+```
+
+**Result**: Field now in Default CRD, all customers get access
+
+--
+
+### 4. Safe Defaults
+
+```
+HyperShift v0.1.70 → v0.1.71
+  + kubelet.podMaxPidsLimit (NEW)
+  + machineConfig.kernelType (NEW)
+```
+
+New fields get:
+- `+k8s:openapi-gen=false` (hidden)
+- `+hyperfleet:write-mode=service-set` (platform-controlled)
+
+**Result**: No accidental exposure of dangerous fields
+
+---
+
+## Real-World Use Cases
+
+### PID Limits for High-Density Workloads
+
+**Customer Need**: 100s of pods per node
+
+**Solution**: Expose `podPidsLimit` as mutable
+
+```yaml
+spec:
+  kubelet:
+    podPidsLimit: 8192  # ✅ Allowed
+```
+
+--
+
+### Reserved Resources
+
+**Customer Need**: Reserve CPU/memory for system
+
+**Solution**: `systemReserved` as immutable
+
+```yaml
+spec:
+  kubelet:
+    systemReserved:
+      cpu: "1000m"
+      memory: "2Gi"
+```
+
+**On update**: ❌ Rejected - immutable
+
+--
+
+### Beta Feature Access
+
+**TechPreview customer** can use gated features
+
+**Default customer** gets 400 error
+
+```
+"error": "field requires feature gate
+  HyperFleetRegistryMirror which is not
+  enabled in Default feature set"
+```
+
+---
+
+## What's Next
+
+### CRD Client-Side Validation
+
+**Current**: Platform API validates before K8s
+
+**Next**: Add validation at CRD level (defense-in-depth)
+
+```
+Customer K8s Request → CRD Webhook → Validate
+                              ↓
+                      ✅ Schema validation
+                      ✅ Write-mode enforcement
+                      ✅ Feature gate checks
+```
+
+**Timeline**: Future work (ROSAENG-61569)
+
+---
+
+## Key Takeaways
+
+1. **We Control What We Expose**
+   - Markers in Go = single source of truth
+   - Safe defaults prevent accidents
+
+2. **We Control What Customers Can Set**
+   - Write-mode markers enforce mutability
+   - Service-set fields are platform-managed
+
+3. **We Control Customer Entitlements**
+   - Feature gates enable per-tier access
+
+4. **Validation is Generic and Scalable**
+   - Zero field-specific code
+   - Scales to hundreds of fields
+
+5. **Production Workflow is Proven**
+   - Explicit field curation
+   - CI prevents unmarked fields
+
+---
+
+## Questions & Discussion
+
+### Resources
+
+- **Epic**: [ROSAENG-61383](https://redhat.atlassian.net/browse/ROSAENG-61383)
+- **Design Doc**: [docs/api-management.md](./api-management.md)
+- **POC Repo**: [github.com/cdoan1/hyperfleet-api-codegen](https://github.com/cdoan1/hyperfleet-api-codegen)
+- **Slack**: #hyperfleet-api
+
+--
+
+## Thank You!
+
+Questions?
+
+                </textarea>
+            </section>
+        </div>
+    </div>
+
+    <!-- Reveal.js and plugins from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/markdown/markdown.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/highlight/highlight.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/notes/notes.js"></script>
+
+    <script>
+        Reveal.initialize({
+            // Display settings
+            width: 1280,
+            height: 720,
+            margin: 0.04,
+
+            // Presentation behavior
+            center: true,
+            hash: true,
+            slideNumber: 'c/t',
+            history: true,
+            transition: 'slide',
+            transitionSpeed: 'default',
+
+            // Navigation
+            controls: true,
+            progress: true,
+            keyboard: true,
+            overview: true,
+
+            // Code highlighting
+            highlight: {
+                highlightOnLoad: true,
+                escapeHTML: false
+            },
+
+            // Plugins
+            plugins: [
+                RevealMarkdown,
+                RevealHighlight,
+                RevealNotes
+            ]
+        });
+    </script>
+</body>
+</html>
