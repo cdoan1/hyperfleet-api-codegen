@@ -7,6 +7,7 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	hypershiftv1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
+	v1alpha1 "github.com/cdoan1/hyperfleet-api-codegen/api/v1alpha1"
 )
 
 // ServiceSetFields contains platform-managed fields injected during UnprojectX conversions
@@ -18,13 +19,13 @@ type ServiceSetFields struct {
 	// AllowedUnsafeSysctls is service-set (platform-managed, hidden from API)
 	AllowedUnsafeSysctls []string `json:"allowedUnsafeSysctls"`
 	// ApiServer is service-set (platform-managed, hidden from API)
-	ApiServer *APIServerNetworkConfiguration `json:"apiServer"`
+	ApiServer *v1alpha1.APIServerNetworkConfiguration `json:"apiServer"`
 	// Arch is service-set (platform-managed, hidden from API)
 	Arch string `json:"arch"`
 	// AuditWebhook is service-set (platform-managed, hidden from API)
 	AuditWebhook *corev1.LocalObjectReference `json:"auditWebhook"`
 	// Authentication is service-set (platform-managed, hidden from API)
-	Authentication *ClusterAuthentication `json:"authentication"`
+	Authentication *v1alpha1.ClusterAuthentication `json:"authentication"`
 	// AutoNode is service-set (platform-managed, hidden from API)
 	AutoNode *hypershiftv1beta1.AutoNode `json:"autoNode"`
 	// AutoScaling is service-set (platform-managed, hidden from API)
@@ -66,13 +67,13 @@ type ServiceSetFields struct {
 	// Extensions is service-set (platform-managed, hidden from API)
 	Extensions string `json:"extensions"`
 	// FeatureGate is service-set (platform-managed, hidden from API)
-	FeatureGate *FeatureGateConfiguration `json:"featureGate"`
+	FeatureGate *v1alpha1.FeatureGateConfiguration `json:"featureGate"`
 	// Files is service-set (platform-managed, hidden from API)
 	Files string `json:"files"`
 	// Fips is service-set (platform-managed, hidden from API)
 	Fips bool `json:"fips"`
 	// Image is service-set (platform-managed, hidden from API)
-	Image *ImageConfiguration `json:"image"`
+	Image *v1alpha1.ImageConfiguration `json:"image"`
 	// ImageContentSources is service-set (platform-managed, hidden from API)
 	ImageContentSources []hypershiftv1beta1.ImageContentSource `json:"imageContentSources"`
 	// InfraID is service-set (platform-managed, hidden from API)
@@ -80,7 +81,7 @@ type ServiceSetFields struct {
 	// InfrastructureAvailabilityPolicy is service-set (platform-managed, hidden from API)
 	InfrastructureAvailabilityPolicy hypershiftv1beta1.AvailabilityPolicy `json:"infrastructureAvailabilityPolicy"`
 	// Ingress is service-set (platform-managed, hidden from API)
-	Ingress *IngressConfiguration `json:"ingress"`
+	Ingress *v1alpha1.IngressConfiguration `json:"ingress"`
 	// InternalID is service-set (platform-managed, hidden from API)
 	InternalID string `json:"internalId"`
 	// InternalPoolID is service-set (platform-managed, hidden from API)
@@ -94,7 +95,7 @@ type ServiceSetFields struct {
 	// KubeAPIServerDNSName is service-set (platform-managed, hidden from API)
 	KubeAPIServerDNSName string `json:"kubeAPIServerDNSName"`
 	// Kubelet is service-set (platform-managed, hidden from API)
-	Kubelet *KubeletConfig `json:"kubelet"`
+	Kubelet *v1alpha1.KubeletConfig `json:"kubelet"`
 	// Labels is service-set (platform-managed, hidden from API)
 	Labels map[string]string `json:"labels"`
 	// Management is service-set (platform-managed, hidden from API)
@@ -102,7 +103,7 @@ type ServiceSetFields struct {
 	// MemoryThrottlingFactor is service-set (platform-managed, hidden from API)
 	MemoryThrottlingFactor *float64 `json:"memoryThrottlingFactor"`
 	// Network is service-set (platform-managed, hidden from API)
-	Network *NetworkConfiguration `json:"network"`
+	Network *v1alpha1.NetworkConfiguration `json:"network"`
 	// Networking is service-set (platform-managed, hidden from API)
 	Networking hypershiftv1beta1.ClusterNetworking `json:"networking"`
 	// NodeDrainTimeout is service-set (platform-managed, hidden from API)
@@ -114,7 +115,7 @@ type ServiceSetFields struct {
 	// NodeVolumeDetachTimeout is service-set (platform-managed, hidden from API)
 	NodeVolumeDetachTimeout *metav1.Duration `json:"nodeVolumeDetachTimeout"`
 	// Oauth is service-set (platform-managed, hidden from API)
-	Oauth *OAuthConfiguration `json:"oauth"`
+	Oauth *v1alpha1.OAuthConfiguration `json:"oauth"`
 	// OlmCatalogPlacement is service-set (platform-managed, hidden from API)
 	OlmCatalogPlacement hypershiftv1beta1.OLMCatalogPlacement `json:"olmCatalogPlacement"`
 	// OperatorConfiguration is service-set (platform-managed, hidden from API)
@@ -124,7 +125,7 @@ type ServiceSetFields struct {
 	// Platform is service-set (platform-managed, hidden from API)
 	Platform hypershiftv1beta1.NodePoolPlatform `json:"platform"`
 	// Proxy is service-set (platform-managed, hidden from API)
-	Proxy *ProxyConfiguration `json:"proxy"`
+	Proxy *v1alpha1.ProxyConfiguration `json:"proxy"`
 	// PullSecret is service-set (platform-managed, hidden from API)
 	PullSecret corev1.LocalObjectReference `json:"pullSecret"`
 	// Release is service-set (platform-managed, hidden from API)
@@ -132,7 +133,7 @@ type ServiceSetFields struct {
 	// Replicas is service-set (platform-managed, hidden from API)
 	Replicas *int32 `json:"replicas"`
 	// Scheduler is service-set (platform-managed, hidden from API)
-	Scheduler *SchedulerConfiguration `json:"scheduler"`
+	Scheduler *v1alpha1.SchedulerConfiguration `json:"scheduler"`
 	// SecretEncryption is service-set (platform-managed, hidden from API)
 	SecretEncryption *hypershiftv1beta1.SecretEncryptionSpec `json:"secretEncryption"`
 	// ServiceAccountSigningKey is service-set (platform-managed, hidden from API)

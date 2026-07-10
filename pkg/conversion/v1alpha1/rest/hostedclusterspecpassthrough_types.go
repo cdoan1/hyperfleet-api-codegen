@@ -2,6 +2,11 @@
 
 package rest
 
+import (
+	hypershiftv1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
+	v1alpha1 "github.com/cdoan1/hyperfleet-api-codegen/api/v1alpha1"
+)
+
 // HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift
 type HostedClusterSpecPassthrough struct {
 	// channel is an identifier for explicitly requesting that a non-default set of updates be applied to this cluster.
@@ -14,7 +19,7 @@ type HostedClusterSpecPassthrough struct {
 	AutoNode *hypershiftv1beta1.AutoNode `json:"autoNode,omitempty"`
 	// configuration specifies configuration for individual OCP components in the cluster.
 	// Uses HyperFleet-owned types to enable granular marker control on nested fields.
-	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
+	Configuration *v1alpha1.ClusterConfiguration `json:"configuration,omitempty"`
 	// operatorConfiguration specifies configuration for individual OCP operators in the cluster.
 	// +hyperfleet:write-mode=service-set
 	OperatorConfiguration *hypershiftv1beta1.OperatorConfiguration `json:"operatorConfiguration,omitempty"`

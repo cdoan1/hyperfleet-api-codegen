@@ -92,13 +92,11 @@ func main() {
 				errors = append(errors, fmt.Sprintf("%s.%s: missing +hyperfleet:write-mode marker", typeName, fieldName))
 			}
 
-			// If field is marked hidden (false), it's explicit
-			// If field has no visibility marker, it defaults to visible (true)
-			// We want to enforce explicit visibility for all fields
-			if !hasVisibility {
-				// This is actually okay - defaults to visible
-				// But we could enforce explicit markers if we want
-			}
+			// Note: Visibility markers are optional
+			// - No marker = visible (default, standard Kubernetes convention)
+			// - +k8s:openapi-gen=false = hidden (explicit)
+			// We only enforce write-mode markers, not visibility markers
+			_ = hasVisibility // Acknowledged - used for future enforcement if needed
 		}
 
 		return true
