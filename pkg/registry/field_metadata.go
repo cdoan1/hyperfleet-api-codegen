@@ -98,7 +98,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.channel": {
 		FieldPath: "spec.hostedCluster.channel",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.clusterID": {
 		FieldPath: "spec.hostedCluster.clusterID",
@@ -108,7 +107,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.configuration": {
 		FieldPath: "spec.hostedCluster.configuration",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.controlPlaneRelease": {
 		FieldPath: "spec.hostedCluster.controlPlaneRelease",
@@ -133,7 +131,6 @@ var FieldRegistry = map[string]FieldMeta{
 	"spec.hostedCluster.fips": {
 		FieldPath: "spec.hostedCluster.fips",
 		WriteMode: ServiceSet,
-		Hidden:    true,
 	},
 	"spec.hostedCluster.imageContentSources": {
 		FieldPath: "spec.hostedCluster.imageContentSources",

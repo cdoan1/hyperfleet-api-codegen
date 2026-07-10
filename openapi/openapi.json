@@ -133,10 +133,25 @@
     "HostedClusterSpecPassthrough": {
       "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
       "type": "object",
+      "required": [
+        "fips"
+      ],
       "properties": {
         "autoNode": {
-          "description": "autoNode specifies the configuration for the autoNode feature.\n+hyperfleet:write-mode=service-set",
+          "description": "autoNode specifies the configuration for the autoNode feature.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
           "type": "object"
+        },
+        "channel": {
+          "description": "channel is an identifier for explicitly requesting that a non-default set of updates be applied to this cluster.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "string"
+        },
+        "configuration": {
+          "description": "configuration specifies configuration for individual OCP components in the\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "object"
+        },
+        "fips": {
+          "description": "fips indicates whether this cluster's nodes will be running in FIPS mode.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
+          "type": "boolean"
         },
         "operatorConfiguration": {
           "description": "operatorConfiguration specifies configuration for individual OCP operators in the cluster.\n+hyperfleet:write-mode=service-set",

@@ -51,8 +51,7 @@
   },
   {
     "fieldPath": "spec.hostedCluster.channel",
-    "writeMode": "service-set",
-    "hidden": true
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.clusterID",
@@ -61,8 +60,7 @@
   },
   {
     "fieldPath": "spec.hostedCluster.configuration",
-    "writeMode": "service-set",
-    "hidden": true
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.controlPlaneRelease",
@@ -86,8 +84,7 @@
   },
   {
     "fieldPath": "spec.hostedCluster.fips",
-    "writeMode": "service-set",
-    "hidden": true
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.imageContentSources",

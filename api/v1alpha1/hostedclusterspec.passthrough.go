@@ -32,7 +32,7 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	UpdateService configv1.URL `json:"updateService,omitempty"`
 	// channel is an identifier for explicitly requesting that a non-default set of updates be applied to this cluster.
-	// +k8s:openapi-gen=false
+	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	Channel string `json:"channel,omitempty"`
 	// platform specifies the underlying infrastructure provider for the cluster
@@ -64,6 +64,7 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	Autoscaling hypershiftv1beta1.ClusterAutoscaling `json:"autoscaling,omitempty"`
 	// autoNode specifies the configuration for the autoNode feature.
+	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	AutoNode *hypershiftv1beta1.AutoNode `json:"autoNode,omitempty"`
 	// etcd specifies configuration for the control plane etcd cluster. The
@@ -91,7 +92,7 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	ServiceAccountSigningKey *corev1.LocalObjectReference `json:"serviceAccountSigningKey,omitempty"`
 	// configuration specifies configuration for individual OCP components in the
-	// +k8s:openapi-gen=false
+	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration,omitempty"`
 	// operatorConfiguration specifies configuration for individual OCP operators in the cluster.
@@ -114,7 +115,7 @@ type HostedClusterSpecPassthrough struct {
 	// +hyperfleet:write-mode=service-set
 	SecretEncryption *hypershiftv1beta1.SecretEncryptionSpec `json:"secretEncryption,omitempty"`
 	// fips indicates whether this cluster's nodes will be running in FIPS mode.
-	// +k8s:openapi-gen=false
+	// +k8s:openapi-gen=true
 	// +hyperfleet:write-mode=service-set
 	FIPS bool `json:"fips"`
 	// pausedUntil is a field that can be used to pause reconciliation on the HostedCluster controller, resulting in any change to the HostedCluster being ignored.
