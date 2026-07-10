@@ -37,7 +37,7 @@
           "$ref": "#/definitions/KubeletConfig"
         },
         "machineConfig": {
-          "description": "machineConfig contains the configuration for machine-level settings (kernel params, systemd, files).\nGranular markers allow safe subset exposure while hiding dangerous operations.",
+          "description": "machineConfig contains the configuration for machine-level settings (kernel params, systemd, files).\nGranular markers allow safe subset exposure while hiding dangerous operations.\n+hyperfleet:write-mode=service-set",
           "$ref": "#/definitions/MachineConfigSpec"
         }
       }
@@ -203,7 +203,7 @@
           "type": "string"
         },
         "configuration": {
-          "description": "configuration specifies configuration for individual OCP components in the cluster.\nUses HyperFleet-owned types to enable granular marker control on nested fields.",
+          "description": "configuration specifies configuration for individual OCP components in the cluster.\nUses HyperFleet-owned types to enable granular marker control on nested fields.\n+hyperfleet:write-mode=service-set",
           "$ref": "#/definitions/ClusterConfiguration"
         },
         "fips": {
