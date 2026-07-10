@@ -7,6 +7,9 @@
   },
   "paths": {},
   "definitions": {
+    "APIServerNetworkConfiguration": {
+      "type": "object"
+    },
     "Cluster": {
       "description": "Cluster represents a HyperFleet managed OpenShift cluster\n+kubebuilder:object:root=true\n+kubebuilder:subresource:status\n+kubebuilder:resource:scope=Namespaced",
       "type": "object",
@@ -19,6 +22,19 @@
         },
         "status": {
           "$ref": "#/definitions/ClusterStatus"
+        }
+      }
+    },
+    "ClusterAuthentication": {
+      "type": "object"
+    },
+    "ClusterConfiguration": {
+      "description": "ClusterConfiguration specifies configuration for individual OCP components in the cluster.\nThis is a HyperFleet-owned mirror of hypershiftv1beta1.ClusterConfiguration that allows\nus to add granular markers to nested fields like kubelet config.",
+      "type": "object",
+      "properties": {
+        "kubelet": {
+          "description": "kubelet contains the configuration for kubelet on nodes.\nThis is where we can add granular control over kubelet fields.\n+hyperfleet:write-mode=service-set",
+          "$ref": "#/definitions/KubeletConfig"
         }
       }
     },
@@ -130,6 +146,9 @@
         }
       }
     },
+    "FeatureGateConfiguration": {
+      "type": "object"
+    },
     "HostedClusterSpecPassthrough": {
       "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
       "type": "object",
@@ -146,8 +165,8 @@
           "type": "string"
         },
         "configuration": {
-          "description": "configuration specifies configuration for individual OCP components in the\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
-          "type": "object"
+          "description": "configuration specifies configuration for individual OCP components in the cluster.\nUses HyperFleet-owned types to enable granular marker control on nested fields.",
+          "$ref": "#/definitions/ClusterConfiguration"
         },
         "fips": {
           "description": "fips indicates whether this cluster's nodes will be running in FIPS mode.\n+k8s:openapi-gen=true\n+hyperfleet:write-mode=service-set",
@@ -162,6 +181,86 @@
           "type": "string"
         }
       }
+    },
+    "ImageConfiguration": {
+      "type": "object"
+    },
+    "IngressConfiguration": {
+      "type": "object"
+    },
+    "KubeletConfig": {
+      "description": "KubeletConfig specifies kubelet configuration.\nThis is a HyperFleet-owned type that mirrors hypershiftv1beta1.KubeletConfig\nwith granular markers for customer control.",
+      "type": "object",
+      "properties": {
+        "containerLogMaxFiles": {
+          "description": "containerLogMaxFiles is the maximum number of container log files.\n+hyperfleet:write-mode=mutable",
+          "type": "integer",
+          "format": "int32"
+        },
+        "containerLogMaxSize": {
+          "description": "containerLogMaxSize is the maximum size of container log file before it is rotated.\n+hyperfleet:write-mode=mutable",
+          "type": "string"
+        },
+        "imageGCHighThresholdPercent": {
+          "description": "imageGCHighThresholdPercent is the disk usage percent triggering image GC.\n+hyperfleet:write-mode=mutable",
+          "type": "integer",
+          "format": "int32"
+        },
+        "imageGCLowThresholdPercent": {
+          "description": "imageGCLowThresholdPercent is the disk usage percent to gc to.\n+hyperfleet:write-mode=mutable",
+          "type": "integer",
+          "format": "int32"
+        },
+        "imageMinimumGCAge": {
+          "description": "imageMinimumGCAge is the minimum age for an unused image before it is garbage collected.\n+hyperfleet:write-mode=mutable",
+          "type": "object"
+        },
+        "kubeReserved": {
+          "description": "kubeReserved specifies resources reserved for Kubernetes system components.\n+hyperfleet:write-mode=immutable",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "maxPods": {
+          "description": "maxPods is the maximum number of pods per node.\nCustomers can set this to optimize for high-density workloads.\n+hyperfleet:write-mode=mutable",
+          "type": "integer",
+          "format": "int32"
+        },
+        "podPidsLimit": {
+          "description": "podPidsLimit is the maximum number of PIDs allowed per pod.\nCustomers can increase this for applications that spawn many processes.\n+hyperfleet:write-mode=mutable",
+          "type": "integer",
+          "format": "int64"
+        },
+        "registryBurst": {
+          "description": "registryBurst is the maximum size of bursty pulls, temporarily allows pulls to burst.\n+openshift:enable:FeatureGate=HyperFleetKubeletAdvanced\n+hyperfleet:write-mode=mutable",
+          "type": "integer",
+          "format": "int32"
+        },
+        "registryPullQPS": {
+          "description": "registryPullQPS is the limit of registry pulls per second.\n+openshift:enable:FeatureGate=HyperFleetKubeletAdvanced\n+hyperfleet:write-mode=mutable",
+          "type": "integer",
+          "format": "int32"
+        },
+        "serializeImagePulls": {
+          "description": "serializeImagePulls when enabled, tells kubelet to pull images one at a time.\nTech preview feature for optimizing image pull performance.\n+openshift:enable:FeatureGate=HyperFleetKubeletAdvanced\n+hyperfleet:write-mode=mutable",
+          "type": "boolean"
+        },
+        "streamingConnectionIdleTimeout": {
+          "description": "streamingConnectionIdleTimeout is the maximum time a streaming connection can be idle.\n+hyperfleet:write-mode=mutable",
+          "type": "object"
+        },
+        "systemReserved": {
+          "description": "systemReserved specifies resources reserved for system daemons.\nCustomers can set this on cluster creation but cannot change it later.\n+hyperfleet:write-mode=immutable",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "NetworkConfiguration": {
+      "type": "object"
     },
     "NodePool": {
       "description": "NodePool represents a HyperFleet managed NodePool for a cluster\n+kubebuilder:object:root=true\n+kubebuilder:subresource:status\n+kubebuilder:resource:scope=Namespaced",
@@ -261,6 +360,15 @@
           "type": "string"
         }
       }
+    },
+    "OAuthConfiguration": {
+      "type": "object"
+    },
+    "ProxyConfiguration": {
+      "type": "object"
+    },
+    "SchedulerConfiguration": {
+      "type": "object"
     }
   }
 }

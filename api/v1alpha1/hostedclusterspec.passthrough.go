@@ -91,10 +91,9 @@ type HostedClusterSpecPassthrough struct {
 	// +k8s:openapi-gen=false
 	// +hyperfleet:write-mode=service-set
 	ServiceAccountSigningKey *corev1.LocalObjectReference `json:"serviceAccountSigningKey,omitempty"`
-	// configuration specifies configuration for individual OCP components in the
-	// +k8s:openapi-gen=true
-	// +hyperfleet:write-mode=service-set
-	Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration,omitempty"`
+	// configuration specifies configuration for individual OCP components in the cluster.
+	// Uses HyperFleet-owned types to enable granular marker control on nested fields.
+	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
 	// operatorConfiguration specifies configuration for individual OCP operators in the cluster.
 	// +hyperfleet:write-mode=service-set
 	OperatorConfiguration *hypershiftv1beta1.OperatorConfiguration `json:"operatorConfiguration,omitempty"`

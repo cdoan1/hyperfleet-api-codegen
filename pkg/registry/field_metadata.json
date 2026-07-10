@@ -1,5 +1,246 @@
 [
   {
+    "fieldPath": "allowedUnsafeSysctls",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "apiServer",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "authentication",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "containerLogMaxFiles",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "containerLogMaxSize",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "cpuManagerPolicy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "cpuManagerPolicyOptions",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "cpuManagerReconcilePeriod",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "evictionHard",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "evictionSoft",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "evictionSoftGracePeriod",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "featureGate",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "image",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "imageGCHighThresholdPercent",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "imageGCLowThresholdPercent",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "imageMinimumGCAge",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "ingress",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubeReserved",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "kubelet",
+    "writeMode": "service-set"
+  },
+  {
+    "fieldPath": "kubelet.allowedUnsafeSysctls",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.containerLogMaxFiles",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.containerLogMaxSize",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.cpuManagerPolicy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.cpuManagerPolicyOptions",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.cpuManagerReconcilePeriod",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.evictionHard",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.evictionSoft",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.evictionSoftGracePeriod",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.imageGCHighThresholdPercent",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.imageGCLowThresholdPercent",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.imageMinimumGCAge",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.kubeReserved",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "kubelet.maxPods",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.memoryThrottlingFactor",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.podPidsLimit",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.registryBurst",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "kubelet.registryPullQPS",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "kubelet.serializeImagePulls",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "kubelet.streamingConnectionIdleTimeout",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "kubelet.systemReserved",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "kubelet.topologyManagerPolicy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "kubelet.topologyManagerScope",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "maxPods",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "memoryThrottlingFactor",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "network",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "oauth",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "podPidsLimit",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "proxy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "registryBurst",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "registryPullQPS",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "scheduler",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "serializeImagePulls",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
     "fieldPath": "spec.accountId",
     "writeMode": "service-set",
     "hidden": true
@@ -59,8 +300,158 @@
     "hidden": true
   },
   {
-    "fieldPath": "spec.hostedCluster.configuration",
+    "fieldPath": "spec.hostedCluster.configuration.apiServer",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.authentication",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.featureGate",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.image",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.ingress",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet",
     "writeMode": "service-set"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.allowedUnsafeSysctls",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.containerLogMaxFiles",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.containerLogMaxSize",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.cpuManagerPolicy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.cpuManagerPolicyOptions",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.cpuManagerReconcilePeriod",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.evictionHard",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.evictionSoft",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.evictionSoftGracePeriod",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.imageGCHighThresholdPercent",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.imageGCLowThresholdPercent",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.imageMinimumGCAge",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.kubeReserved",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.maxPods",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.memoryThrottlingFactor",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.podPidsLimit",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.registryBurst",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.registryPullQPS",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.serializeImagePulls",
+    "writeMode": "mutable",
+    "featureGate": "HyperFleetKubeletAdvanced"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.streamingConnectionIdleTimeout",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.systemReserved",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.topologyManagerPolicy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.kubelet.topologyManagerScope",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.network",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.oauth",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.proxy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.scheduler",
+    "writeMode": "service-set",
+    "hidden": true
   },
   {
     "fieldPath": "spec.hostedCluster.controlPlaneRelease",
@@ -276,5 +667,23 @@
     "fieldPath": "spec.tags",
     "writeMode": "mutable",
     "featureGate": "HyperFleetAutoScaling"
+  },
+  {
+    "fieldPath": "streamingConnectionIdleTimeout",
+    "writeMode": "mutable"
+  },
+  {
+    "fieldPath": "systemReserved",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "topologyManagerPolicy",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "topologyManagerScope",
+    "writeMode": "service-set",
+    "hidden": true
   }
 ]
