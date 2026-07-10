@@ -193,6 +193,40 @@
     "hidden": true
   },
   {
+    "fieldPath": "machineConfig.allowedKernelArguments",
+    "writeMode": "immutable",
+    "featureGate": "HyperFleetMachineConfig"
+  },
+  {
+    "fieldPath": "machineConfig.extensions",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "machineConfig.files",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "machineConfig.fips",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "machineConfig.kernelArguments",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "machineConfig.kernelType",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "machineConfig.systemdUnits",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
     "fieldPath": "maxPods",
     "writeMode": "mutable"
   },
@@ -430,6 +464,40 @@
   },
   {
     "fieldPath": "spec.hostedCluster.configuration.kubelet.topologyManagerScope",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig.allowedKernelArguments",
+    "writeMode": "immutable",
+    "featureGate": "HyperFleetMachineConfig"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig.extensions",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig.files",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig.fips",
+    "writeMode": "immutable"
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig.kernelArguments",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig.kernelType",
+    "writeMode": "service-set",
+    "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig.systemdUnits",
     "writeMode": "service-set",
     "hidden": true
   },

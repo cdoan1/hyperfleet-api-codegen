@@ -238,6 +238,40 @@ var FieldRegistry = map[string]FieldMeta{
 		WriteMode: ServiceSet,
 		Hidden:    true,
 	},
+	"machineConfig.allowedKernelArguments": {
+		FieldPath:   "machineConfig.allowedKernelArguments",
+		WriteMode:   Immutable,
+		FeatureGate: "HyperFleetMachineConfig",
+	},
+	"machineConfig.extensions": {
+		FieldPath: "machineConfig.extensions",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"machineConfig.files": {
+		FieldPath: "machineConfig.files",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"machineConfig.fips": {
+		FieldPath: "machineConfig.fips",
+		WriteMode: Immutable,
+	},
+	"machineConfig.kernelArguments": {
+		FieldPath: "machineConfig.kernelArguments",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"machineConfig.kernelType": {
+		FieldPath: "machineConfig.kernelType",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"machineConfig.systemdUnits": {
+		FieldPath: "machineConfig.systemdUnits",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
 	"maxPods": {
 		FieldPath: "maxPods",
 		WriteMode: Mutable,
@@ -476,6 +510,40 @@ var FieldRegistry = map[string]FieldMeta{
 	},
 	"spec.hostedCluster.configuration.kubelet.topologyManagerScope": {
 		FieldPath: "spec.hostedCluster.configuration.kubelet.topologyManagerScope",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"spec.hostedCluster.configuration.machineConfig.allowedKernelArguments": {
+		FieldPath:   "spec.hostedCluster.configuration.machineConfig.allowedKernelArguments",
+		WriteMode:   Immutable,
+		FeatureGate: "HyperFleetMachineConfig",
+	},
+	"spec.hostedCluster.configuration.machineConfig.extensions": {
+		FieldPath: "spec.hostedCluster.configuration.machineConfig.extensions",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"spec.hostedCluster.configuration.machineConfig.files": {
+		FieldPath: "spec.hostedCluster.configuration.machineConfig.files",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"spec.hostedCluster.configuration.machineConfig.fips": {
+		FieldPath: "spec.hostedCluster.configuration.machineConfig.fips",
+		WriteMode: Immutable,
+	},
+	"spec.hostedCluster.configuration.machineConfig.kernelArguments": {
+		FieldPath: "spec.hostedCluster.configuration.machineConfig.kernelArguments",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"spec.hostedCluster.configuration.machineConfig.kernelType": {
+		FieldPath: "spec.hostedCluster.configuration.machineConfig.kernelType",
+		WriteMode: ServiceSet,
+		Hidden:    true,
+	},
+	"spec.hostedCluster.configuration.machineConfig.systemdUnits": {
+		FieldPath: "spec.hostedCluster.configuration.machineConfig.systemdUnits",
 		WriteMode: ServiceSet,
 		Hidden:    true,
 	},

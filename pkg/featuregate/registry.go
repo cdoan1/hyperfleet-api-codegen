@@ -24,6 +24,16 @@ var HyperFleetFeatureGates = map[string]FeatureGateInfo{
 		Stage:       DevPreview,
 		Description: "Enables custom DNS configuration for development/testing",
 	},
+
+	"HyperFleetKubeletAdvanced": {
+		Stage:       TechPreview,
+		Description: "Enables advanced kubelet configuration (serializeImagePulls, registryPullQPS, etc.)",
+	},
+
+	"HyperFleetMachineConfig": {
+		Stage:       TechPreview,
+		Description: "Allows customers to request approved kernel parameters via allowlist",
+	},
 }
 
 // IsGateEnabled returns true if the given gate is enabled for the feature set

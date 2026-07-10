@@ -57,6 +57,10 @@ type ClusterConfiguration struct {
 	// This is where we can add granular control over kubelet fields.
 	// +hyperfleet:write-mode=service-set
 	Kubelet *KubeletConfig `json:"kubelet,omitempty"`
+
+	// machineConfig contains the configuration for machine-level settings (kernel params, systemd, files).
+	// Granular markers allow safe subset exposure while hiding dangerous operations.
+	MachineConfig *MachineConfigSpec `json:"machineConfig,omitempty"`
 }
 
 // KubeletConfig specifies kubelet configuration.
@@ -215,4 +219,98 @@ type SchedulerConfiguration struct {
 
 type ProxyConfiguration struct {
 	// TODO: Define fields with markers
+}
+
+// MachineConfigSpec specifies machine-level configuration.
+// This controls kernel parameters, systemd units, and file writes.
+// Most fields are platform-managed for security and stability.
+type MachineConfigSpec struct {
+	// allowedKernelArguments specifies kernel parameters customers can request.
+	// This is a WHITELIST approach - customers can only request known-safe parameters.
+	// Platform validates against an allowlist and applies approved parameters.
+	// Tech Preview feature requiring explicit enablement.
+	// +openshift:enable:FeatureGate=HyperFleetMachineConfig
+	// +hyperfleet:write-mode=immutable
+	AllowedKernelArguments []string `json:"allowedKernelArguments,omitempty"`
+
+	// kernelArguments are the actual kernel parameters applied to nodes.
+	// Platform manages the final list based on AllowedKernelArguments and platform defaults.
+	// Hidden from customers - they request via AllowedKernelArguments, platform sets this.
+	// +k8s:openapi-gen=false
+	// +hyperfleet:write-mode=service-set
+	KernelArguments []string `json:"kernelArguments,omitempty"`
+
+	// systemdUnits are systemd units to configure on nodes.
+	// Platform-only for security - arbitrary systemd units are dangerous.
+	// +k8s:openapi-gen=false
+	// +hyperfleet:write-mode=service-set
+	SystemdUnits []SystemdUnit `json:"systemdUnits,omitempty"`
+
+	// files are file writes to perform on nodes.
+	// Platform-only for security - arbitrary file writes are dangerous.
+	// +k8s:openapi-gen=false
+	// +hyperfleet:write-mode=service-set
+	Files []FileSpec `json:"files,omitempty"`
+
+	// fips enables FIPS mode on nodes.
+	// Immutable - must be set at cluster creation, cannot be changed.
+	// +hyperfleet:write-mode=immutable
+	FIPS *bool `json:"fips,omitempty"`
+
+	// kernelType specifies the kernel variant (default, realtime).
+	// Platform manages this for consistency and support.
+	// +k8s:openapi-gen=false
+	// +hyperfleet:write-mode=service-set
+	KernelType *string `json:"kernelType,omitempty"`
+
+	// extensions are additional software to install on nodes (e.g., usbguard, sandboxed-containers).
+	// Platform manages the allowed extension list.
+	// +k8s:openapi-gen=false
+	// +hyperfleet:write-mode=service-set
+	Extensions []string `json:"extensions,omitempty"`
+}
+
+// SystemdUnit represents a systemd unit configuration.
+type SystemdUnit struct {
+	// name is the name of the systemd unit (e.g., "custom.service")
+	Name string `json:"name"`
+
+	// enabled specifies whether the unit is enabled
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// contents is the full systemd unit file contents
+	Contents string `json:"contents,omitempty"`
+
+	// dropins are drop-in configurations for the unit
+	Dropins []SystemdDropin `json:"dropins,omitempty"`
+}
+
+// SystemdDropin represents a systemd drop-in configuration.
+type SystemdDropin struct {
+	// name is the name of the drop-in file
+	Name string `json:"name"`
+
+	// contents is the drop-in file contents
+	Contents string `json:"contents,omitempty"`
+}
+
+// FileSpec represents a file to write to nodes.
+type FileSpec struct {
+	// path is the absolute path where the file should be written
+	Path string `json:"path"`
+
+	// contents is the file contents
+	Contents string `json:"contents,omitempty"`
+
+	// mode is the file permissions (e.g., 0644)
+	Mode *int32 `json:"mode,omitempty"`
+
+	// user is the file owner user
+	User *string `json:"user,omitempty"`
+
+	// group is the file owner group
+	Group *string `json:"group,omitempty"`
+
+	// overwrite specifies whether to overwrite existing files
+	Overwrite *bool `json:"overwrite,omitempty"`
 }

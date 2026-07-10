@@ -35,6 +35,10 @@
         "kubelet": {
           "description": "kubelet contains the configuration for kubelet on nodes.\nThis is where we can add granular control over kubelet fields.\n+hyperfleet:write-mode=service-set",
           "$ref": "#/definitions/KubeletConfig"
+        },
+        "machineConfig": {
+          "description": "machineConfig contains the configuration for machine-level settings (kernel params, systemd, files).\nGranular markers allow safe subset exposure while hiding dangerous operations.",
+          "$ref": "#/definitions/MachineConfigSpec"
         }
       }
     },
@@ -149,6 +153,40 @@
     "FeatureGateConfiguration": {
       "type": "object"
     },
+    "FileSpec": {
+      "description": "FileSpec represents a file to write to nodes.",
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "contents": {
+          "description": "contents is the file contents",
+          "type": "string"
+        },
+        "group": {
+          "description": "group is the file owner group",
+          "type": "string"
+        },
+        "mode": {
+          "description": "mode is the file permissions (e.g., 0644)",
+          "type": "integer",
+          "format": "int32"
+        },
+        "overwrite": {
+          "description": "overwrite specifies whether to overwrite existing files",
+          "type": "boolean"
+        },
+        "path": {
+          "description": "path is the absolute path where the file should be written",
+          "type": "string"
+        },
+        "user": {
+          "description": "user is the file owner user",
+          "type": "string"
+        }
+      }
+    },
     "HostedClusterSpecPassthrough": {
       "description": "HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift",
       "type": "object",
@@ -256,6 +294,23 @@
           "additionalProperties": {
             "type": "string"
           }
+        }
+      }
+    },
+    "MachineConfigSpec": {
+      "description": "MachineConfigSpec specifies machine-level configuration.\nThis controls kernel parameters, systemd units, and file writes.\nMost fields are platform-managed for security and stability.",
+      "type": "object",
+      "properties": {
+        "allowedKernelArguments": {
+          "description": "allowedKernelArguments specifies kernel parameters customers can request.\nThis is a WHITELIST approach - customers can only request known-safe parameters.\nPlatform validates against an allowlist and applies approved parameters.\nTech Preview feature requiring explicit enablement.\n+openshift:enable:FeatureGate=HyperFleetMachineConfig\n+hyperfleet:write-mode=immutable",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fips": {
+          "description": "fips enables FIPS mode on nodes.\nImmutable - must be set at cluster creation, cannot be changed.\n+hyperfleet:write-mode=immutable",
+          "type": "boolean"
         }
       }
     },
@@ -369,6 +424,51 @@
     },
     "SchedulerConfiguration": {
       "type": "object"
+    },
+    "SystemdDropin": {
+      "description": "SystemdDropin represents a systemd drop-in configuration.",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "contents": {
+          "description": "contents is the drop-in file contents",
+          "type": "string"
+        },
+        "name": {
+          "description": "name is the name of the drop-in file",
+          "type": "string"
+        }
+      }
+    },
+    "SystemdUnit": {
+      "description": "SystemdUnit represents a systemd unit configuration.",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "contents": {
+          "description": "contents is the full systemd unit file contents",
+          "type": "string"
+        },
+        "dropins": {
+          "description": "dropins are drop-in configurations for the unit",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "enabled": {
+          "description": "enabled specifies whether the unit is enabled",
+          "type": "boolean"
+        },
+        "name": {
+          "description": "name is the name of the systemd unit (e.g., \"custom.service\")",
+          "type": "string"
+        }
+      }
     }
   }
 }

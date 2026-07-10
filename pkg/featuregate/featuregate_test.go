@@ -73,8 +73,8 @@ func TestGatesForFeatureSet(t *testing.T) {
 		wantCount  int
 	}{
 		{"Default has 1 gate (GA only)", Default, 1},
-		{"TechPreview has 3 gates (GA + TechPreview)", TechPreviewNoUpgrade, 3},
-		{"DevPreview has 4 gates (GA + TechPreview + DevPreview)", DevPreviewNoUpgrade, 4},
+		{"TechPreview has 5 gates (GA + TechPreview)", TechPreviewNoUpgrade, 5},
+		{"DevPreview has 6 gates (GA + TechPreview + DevPreview)", DevPreviewNoUpgrade, 6},
 	}
 
 	for _, tt := range tests {
