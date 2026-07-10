@@ -60,6 +60,7 @@ type ClusterConfiguration struct {
 
 	// machineConfig contains the configuration for machine-level settings (kernel params, systemd, files).
 	// Granular markers allow safe subset exposure while hiding dangerous operations.
+	// +hyperfleet:write-mode=service-set
 	MachineConfig *MachineConfigSpec `json:"machineConfig,omitempty"`
 }
 

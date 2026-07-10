@@ -6,9 +6,9 @@ import (
 
 func TestFeatureStageHierarchy(t *testing.T) {
 	tests := []struct {
-		name        string
-		featureSet  FeatureSet
-		stage       FeatureStage
+		name          string
+		featureSet    FeatureSet
+		stage         FeatureStage
 		shouldInclude bool
 	}{
 		{"Default includes GA", Default, GA, true},

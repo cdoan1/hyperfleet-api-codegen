@@ -13,8 +13,9 @@ import (
 // This works for both local packages and module dependencies in go.mod.
 //
 // Example:
-//   ResolvePackageDir("github.com/openshift/hypershift/api/hypershift/v1beta1")
-//   => "/Users/user/go/pkg/mod/github.com/openshift/hypershift/api@v0.0.0-20251113065312-f919037748bf/hypershift/v1beta1"
+//
+//	ResolvePackageDir("github.com/openshift/hypershift/api/hypershift/v1beta1")
+//	=> "/Users/user/go/pkg/mod/github.com/openshift/hypershift/api@v0.0.0-20251113065312-f919037748bf/hypershift/v1beta1"
 func ResolvePackageDir(importPath string) (string, error) {
 	cmd := exec.Command("go", "list", "-f", "{{.Dir}}", importPath)
 	output, err := cmd.CombinedOutput()
@@ -34,11 +35,12 @@ func ResolvePackageDir(importPath string) (string, error) {
 // from a Go import path using `go list`.
 //
 // Example:
-//   gen, err := NewGeneratorFromImportPath(
-//       "github.com/openshift/hypershift/api/hypershift/v1beta1",
-//       []string{"HostedClusterSpec", "NodePoolSpec"},
-//       registry,
-//   )
+//
+//	gen, err := NewGeneratorFromImportPath(
+//	    "github.com/openshift/hypershift/api/hypershift/v1beta1",
+//	    []string{"HostedClusterSpec", "NodePoolSpec"},
+//	    registry,
+//	)
 func NewGeneratorFromImportPath(importPath string, sourceTypes []string, registry markers.FieldRegistry) (*Generator, error) {
 	sourceDir, err := ResolvePackageDir(importPath)
 	if err != nil {

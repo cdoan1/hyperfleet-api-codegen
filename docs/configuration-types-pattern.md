@@ -441,6 +441,47 @@ type XConfiguration struct {
 
 ---
 
+## CI Verification
+
+**Convention**: Hand-written configuration types require markers, enforced by CI.
+
+### Why Hand-Written (Not Generated)?
+
+Unlike `HostedClusterSpecPassthrough` and `NodePoolSpecPassthrough` (generated from upstream HyperShift), configuration types are **HyperFleet-owned** and hand-written:
+
+1. **HyperShift doesn't have these types** - kubelet/machine config are HyperFleet-specific additions
+2. **Granular control needed** - Each field requires deliberate marker decisions
+3. **Security review** - Each exposed field must be reviewed for safety
+
+### Verification Tool
+
+`cmd/verify-configuration` enforces that all exported fields in configuration types have `+hyperfleet:write-mode` markers.
+
+**Runs automatically**:
+- `make verify` (local)
+- CI on every commit
+- Pre-push git hook (optional)
+
+**How it works**:
+1. Parses `api/v1alpha1/configuration.go` AST
+2. Finds structs ending in `Configuration`, `Config`, or `Spec`
+3. Checks each exported field has `+hyperfleet:write-mode` marker
+4. Exits with error listing missing markers
+
+**Excluded**: Support types (`SystemdUnit`, `SystemdDropin`, `FileSpec`) that are never exposed directly.
+
+**Example error**:
+```
+Configuration verification failed:
+  ❌ KubeletConfig.MaxPods: missing +hyperfleet:write-mode marker
+  ❌ MachineConfigSpec.FIPS: missing +hyperfleet:write-mode marker
+
+All fields in configuration types must have +hyperfleet:write-mode markers.
+Add one of: mutable, immutable, service-set
+```
+
+---
+
 ## Best Practices
 
 ### Security-First

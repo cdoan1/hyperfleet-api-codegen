@@ -4,4 +4,25 @@ package rest
 
 // HostedClusterSpecPassthrough mirrors HostedClusterSpec from upstream HyperShift
 type HostedClusterSpecPassthrough struct {
+	// channel is an identifier for explicitly requesting that a non-default set of updates be applied to this cluster.
+	// +k8s:openapi-gen=true
+	// +hyperfleet:write-mode=service-set
+	Channel string `json:"channel,omitempty"`
+	// autoNode specifies the configuration for the autoNode feature.
+	// +k8s:openapi-gen=true
+	// +hyperfleet:write-mode=service-set
+	AutoNode *hypershiftv1beta1.AutoNode `json:"autoNode,omitempty"`
+	// configuration specifies configuration for individual OCP components in the cluster.
+	// Uses HyperFleet-owned types to enable granular marker control on nested fields.
+	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
+	// operatorConfiguration specifies configuration for individual OCP operators in the cluster.
+	// +hyperfleet:write-mode=service-set
+	OperatorConfiguration *hypershiftv1beta1.OperatorConfiguration `json:"operatorConfiguration,omitempty"`
+	// fips indicates whether this cluster's nodes will be running in FIPS mode.
+	// +k8s:openapi-gen=true
+	// +hyperfleet:write-mode=service-set
+	FIPS bool `json:"fips"`
+	// pausedUntil is a field that can be used to pause reconciliation on the HostedCluster controller, resulting in any change to the HostedCluster being ignored.
+	// +hyperfleet:write-mode=service-set
+	PausedUntil *string `json:"pausedUntil,omitempty"`
 }

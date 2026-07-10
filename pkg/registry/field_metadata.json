@@ -193,6 +193,10 @@
     "hidden": true
   },
   {
+    "fieldPath": "machineConfig",
+    "writeMode": "service-set"
+  },
+  {
     "fieldPath": "machineConfig.allowedKernelArguments",
     "writeMode": "immutable",
     "featureGate": "HyperFleetMachineConfig"
@@ -466,6 +470,10 @@
     "fieldPath": "spec.hostedCluster.configuration.kubelet.topologyManagerScope",
     "writeMode": "service-set",
     "hidden": true
+  },
+  {
+    "fieldPath": "spec.hostedCluster.configuration.machineConfig",
+    "writeMode": "service-set"
   },
   {
     "fieldPath": "spec.hostedCluster.configuration.machineConfig.allowedKernelArguments",

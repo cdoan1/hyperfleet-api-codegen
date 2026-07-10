@@ -16,9 +16,9 @@ func ExampleValidator_Validate_create() {
 	req := &validation.Request{
 		Operation: validation.OperationCreate,
 		Fields: map[string]any{
-			"spec.displayName":   "my-cluster",
+			"spec.displayName":      "my-cluster",
 			"spec.deleteProtection": true,
-			"spec.labels":        map[string]string{"env": "prod"},
+			"spec.labels":           map[string]string{"env": "prod"},
 		},
 		FeatureSet: featuregate.Default,
 	}

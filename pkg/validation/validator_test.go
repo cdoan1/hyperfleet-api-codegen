@@ -10,12 +10,12 @@ import (
 
 func TestValidator_Validate_WriteMode(t *testing.T) {
 	tests := []struct {
-		name       string
-		fieldPath  string
-		writeMode  registry.WriteMode
-		operation  Operation
+		name        string
+		fieldPath   string
+		writeMode   registry.WriteMode
+		operation   Operation
 		existsInOld bool
-		wantErr    bool
+		wantErr     bool
 		errContains string
 	}{
 		{

@@ -134,21 +134,21 @@ spec:
 	}
 
 	tests := []struct {
-		name          string
-		featureSet    FeatureSet
-		shouldContain []string
+		name             string
+		featureSet       FeatureSet
+		shouldContain    []string
 		shouldNotContain []string
 	}{
 		{
-			name:          "Default variant excludes gated fields",
-			featureSet:    Default,
-			shouldContain: []string{"displayName"},
+			name:             "Default variant excludes gated fields",
+			featureSet:       Default,
+			shouldContain:    []string{"displayName"},
 			shouldNotContain: []string{"tags:"},
 		},
 		{
-			name:          "TechPreview variant includes gated fields",
-			featureSet:    TechPreviewNoUpgrade,
-			shouldContain: []string{"displayName", "tags:"},
+			name:             "TechPreview variant includes gated fields",
+			featureSet:       TechPreviewNoUpgrade,
+			shouldContain:    []string{"displayName", "tags:"},
 			shouldNotContain: nil,
 		},
 	}

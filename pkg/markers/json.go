@@ -18,11 +18,11 @@ func (s *MarkerScanner) GenerateJSON(outputFile string) error {
 
 	// Convert registry to sorted slice for deterministic output
 	type jsonField struct {
-		FieldPath                  string                   `json:"fieldPath"`
-		WriteMode                  string                   `json:"writeMode,omitempty"`
-		FeatureGate                string                   `json:"featureGate,omitempty"`
-		Hidden                     bool                     `json:"hidden,omitempty"`
-		FeatureGateAwareWriteModes []FeatureGateWriteMode   `json:"featureGateAwareWriteModes,omitempty"`
+		FieldPath                  string                 `json:"fieldPath"`
+		WriteMode                  string                 `json:"writeMode,omitempty"`
+		FeatureGate                string                 `json:"featureGate,omitempty"`
+		Hidden                     bool                   `json:"hidden,omitempty"`
+		FeatureGateAwareWriteModes []FeatureGateWriteMode `json:"featureGateAwareWriteModes,omitempty"`
 	}
 
 	var fields []jsonField
@@ -66,11 +66,11 @@ func LoadRegistryFromJSON(jsonFile string) (FieldRegistry, error) {
 	}
 
 	type jsonField struct {
-		FieldPath                  string                   `json:"fieldPath"`
-		WriteMode                  string                   `json:"writeMode,omitempty"`
-		FeatureGate                string                   `json:"featureGate,omitempty"`
-		Hidden                     bool                     `json:"hidden,omitempty"`
-		FeatureGateAwareWriteModes []FeatureGateWriteMode   `json:"featureGateAwareWriteModes,omitempty"`
+		FieldPath                  string                 `json:"fieldPath"`
+		WriteMode                  string                 `json:"writeMode,omitempty"`
+		FeatureGate                string                 `json:"featureGate,omitempty"`
+		Hidden                     bool                   `json:"hidden,omitempty"`
+		FeatureGateAwareWriteModes []FeatureGateWriteMode `json:"featureGateAwareWriteModes,omitempty"`
 	}
 
 	var fields []jsonField

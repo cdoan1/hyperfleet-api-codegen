@@ -35,13 +35,13 @@ type typeInfo struct {
 
 // fieldInfo holds information about a struct field
 type fieldInfo struct {
-	GoName    string          // Go field name (e.g., "DisplayName")
-	JSONName  string          // JSON tag name (e.g., "displayName")
-	GoType    string          // Go type as string (e.g., "string", "*bool")
-	FieldPath string          // Registry path (e.g., "spec.displayName")
-	Field     *ast.Field      // Original AST field
+	GoName    string     // Go field name (e.g., "DisplayName")
+	JSONName  string     // JSON tag name (e.g., "displayName")
+	GoType    string     // Go type as string (e.g., "string", "*bool")
+	FieldPath string     // Registry path (e.g., "spec.displayName")
+	Field     *ast.Field // Original AST field
 	Doc       *ast.CommentGroup
-	Hidden    bool            // From registry
+	Hidden    bool // From registry
 	WriteMode registry.WriteMode
 }
 
@@ -389,9 +389,9 @@ func (g *Generator) generateRESTType(ti *typeInfo) string {
 func (g *Generator) generateServiceSetFields() error {
 	// Collect all service-set fields from registry
 	type serviceSetField struct {
-		GoName   string
-		GoType   string
-		JSONTag  string
+		GoName    string
+		GoType    string
+		JSONTag   string
 		FieldPath string
 	}
 
@@ -412,17 +412,17 @@ func (g *Generator) generateServiceSetFields() error {
 			if existing, exists := fieldsMap[jsonTag]; exists {
 				if len(goType) > len(existing.GoType) {
 					fieldsMap[jsonTag] = serviceSetField{
-						GoName:   goName,
-						GoType:   goType,
-						JSONTag:  jsonTag,
+						GoName:    goName,
+						GoType:    goType,
+						JSONTag:   jsonTag,
 						FieldPath: path,
 					}
 				}
 			} else {
 				fieldsMap[jsonTag] = serviceSetField{
-					GoName:   goName,
-					GoType:   goType,
-					JSONTag:  jsonTag,
+					GoName:    goName,
+					GoType:    goType,
+					JSONTag:   jsonTag,
 					FieldPath: path,
 				}
 			}
@@ -617,8 +617,8 @@ func (g *Generator) generateProjectSpecFunction(resource, specType string) strin
 
 		// Check if this is a custom type that needs conversion
 		needsHelper := false
-		baseType := strings.TrimPrefix(fi.GoType, "*")  // Remove pointer
-		baseType = strings.TrimPrefix(baseType, "[]")   // Remove slice
+		baseType := strings.TrimPrefix(fi.GoType, "*") // Remove pointer
+		baseType = strings.TrimPrefix(baseType, "[]")  // Remove slice
 		if _, isCustom := g.typeInfos[baseType]; isCustom {
 			needsHelper = true
 		}
@@ -798,4 +798,3 @@ func (g *Generator) writeFile(relativePath, content string) error {
 
 	return os.WriteFile(fullPath, []byte(content), 0644)
 }
-

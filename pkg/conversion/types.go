@@ -15,10 +15,16 @@ type ServiceSetFields struct {
 	AccountID string `json:"accountId"`
 	// AdditionalTrustBundle is service-set (platform-managed, hidden from API)
 	AdditionalTrustBundle *corev1.LocalObjectReference `json:"additionalTrustBundle"`
+	// AllowedUnsafeSysctls is service-set (platform-managed, hidden from API)
+	AllowedUnsafeSysctls []string `json:"allowedUnsafeSysctls"`
+	// ApiServer is service-set (platform-managed, hidden from API)
+	ApiServer *APIServerNetworkConfiguration `json:"apiServer"`
 	// Arch is service-set (platform-managed, hidden from API)
 	Arch string `json:"arch"`
 	// AuditWebhook is service-set (platform-managed, hidden from API)
 	AuditWebhook *corev1.LocalObjectReference `json:"auditWebhook"`
+	// Authentication is service-set (platform-managed, hidden from API)
+	Authentication *ClusterAuthentication `json:"authentication"`
 	// AutoNode is service-set (platform-managed, hidden from API)
 	AutoNode *hypershiftv1beta1.AutoNode `json:"autoNode"`
 	// AutoScaling is service-set (platform-managed, hidden from API)
@@ -35,38 +41,68 @@ type ServiceSetFields struct {
 	ClusterName string `json:"clusterName"`
 	// Config is service-set (platform-managed, hidden from API)
 	Config []corev1.LocalObjectReference `json:"config"`
-	// Configuration is service-set (platform-managed, hidden from API)
-	Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration"`
 	// ControlPlaneRelease is service-set (platform-managed, hidden from API)
 	ControlPlaneRelease *hypershiftv1beta1.Release `json:"controlPlaneRelease"`
 	// ControllerAvailabilityPolicy is service-set (platform-managed, hidden from API)
 	ControllerAvailabilityPolicy hypershiftv1beta1.AvailabilityPolicy `json:"controllerAvailabilityPolicy"`
+	// CpuManagerPolicy is service-set (platform-managed, hidden from API)
+	CpuManagerPolicy *string `json:"cpuManagerPolicy"`
+	// CpuManagerPolicyOptions is service-set (platform-managed, hidden from API)
+	CpuManagerPolicyOptions map[string]string `json:"cpuManagerPolicyOptions"`
+	// CpuManagerReconcilePeriod is service-set (platform-managed, hidden from API)
+	CpuManagerReconcilePeriod *metav1.Duration `json:"cpuManagerReconcilePeriod"`
 	// CreatorARN is service-set (platform-managed, hidden from API)
 	CreatorARN string `json:"creatorARN"`
 	// Dns is service-set (platform-managed, hidden from API)
 	Dns hypershiftv1beta1.DNSSpec `json:"dns"`
 	// Etcd is service-set (platform-managed, hidden from API)
 	Etcd hypershiftv1beta1.EtcdSpec `json:"etcd"`
+	// EvictionHard is service-set (platform-managed, hidden from API)
+	EvictionHard map[string]string `json:"evictionHard"`
+	// EvictionSoft is service-set (platform-managed, hidden from API)
+	EvictionSoft map[string]string `json:"evictionSoft"`
+	// EvictionSoftGracePeriod is service-set (platform-managed, hidden from API)
+	EvictionSoftGracePeriod map[string]string `json:"evictionSoftGracePeriod"`
+	// Extensions is service-set (platform-managed, hidden from API)
+	Extensions string `json:"extensions"`
+	// FeatureGate is service-set (platform-managed, hidden from API)
+	FeatureGate *FeatureGateConfiguration `json:"featureGate"`
+	// Files is service-set (platform-managed, hidden from API)
+	Files string `json:"files"`
 	// Fips is service-set (platform-managed, hidden from API)
 	Fips bool `json:"fips"`
+	// Image is service-set (platform-managed, hidden from API)
+	Image *ImageConfiguration `json:"image"`
 	// ImageContentSources is service-set (platform-managed, hidden from API)
 	ImageContentSources []hypershiftv1beta1.ImageContentSource `json:"imageContentSources"`
 	// InfraID is service-set (platform-managed, hidden from API)
 	InfraID string `json:"infraID"`
 	// InfrastructureAvailabilityPolicy is service-set (platform-managed, hidden from API)
 	InfrastructureAvailabilityPolicy hypershiftv1beta1.AvailabilityPolicy `json:"infrastructureAvailabilityPolicy"`
+	// Ingress is service-set (platform-managed, hidden from API)
+	Ingress *IngressConfiguration `json:"ingress"`
 	// InternalID is service-set (platform-managed, hidden from API)
 	InternalID string `json:"internalId"`
 	// InternalPoolID is service-set (platform-managed, hidden from API)
 	InternalPoolID string `json:"internalPoolId"`
 	// IssuerURL is service-set (platform-managed, hidden from API)
 	IssuerURL string `json:"issuerURL"`
+	// KernelArguments is service-set (platform-managed, hidden from API)
+	KernelArguments string `json:"kernelArguments"`
+	// KernelType is service-set (platform-managed, hidden from API)
+	KernelType string `json:"kernelType"`
 	// KubeAPIServerDNSName is service-set (platform-managed, hidden from API)
 	KubeAPIServerDNSName string `json:"kubeAPIServerDNSName"`
+	// Kubelet is service-set (platform-managed, hidden from API)
+	Kubelet *KubeletConfig `json:"kubelet"`
 	// Labels is service-set (platform-managed, hidden from API)
 	Labels map[string]string `json:"labels"`
 	// Management is service-set (platform-managed, hidden from API)
 	Management hypershiftv1beta1.NodePoolManagement `json:"management"`
+	// MemoryThrottlingFactor is service-set (platform-managed, hidden from API)
+	MemoryThrottlingFactor *float64 `json:"memoryThrottlingFactor"`
+	// Network is service-set (platform-managed, hidden from API)
+	Network *NetworkConfiguration `json:"network"`
 	// Networking is service-set (platform-managed, hidden from API)
 	Networking hypershiftv1beta1.ClusterNetworking `json:"networking"`
 	// NodeDrainTimeout is service-set (platform-managed, hidden from API)
@@ -77,6 +113,8 @@ type ServiceSetFields struct {
 	NodeSelector map[string]string `json:"nodeSelector"`
 	// NodeVolumeDetachTimeout is service-set (platform-managed, hidden from API)
 	NodeVolumeDetachTimeout *metav1.Duration `json:"nodeVolumeDetachTimeout"`
+	// Oauth is service-set (platform-managed, hidden from API)
+	Oauth *OAuthConfiguration `json:"oauth"`
 	// OlmCatalogPlacement is service-set (platform-managed, hidden from API)
 	OlmCatalogPlacement hypershiftv1beta1.OLMCatalogPlacement `json:"olmCatalogPlacement"`
 	// OperatorConfiguration is service-set (platform-managed, hidden from API)
@@ -85,12 +123,16 @@ type ServiceSetFields struct {
 	PausedUntil *string `json:"pausedUntil"`
 	// Platform is service-set (platform-managed, hidden from API)
 	Platform hypershiftv1beta1.NodePoolPlatform `json:"platform"`
+	// Proxy is service-set (platform-managed, hidden from API)
+	Proxy *ProxyConfiguration `json:"proxy"`
 	// PullSecret is service-set (platform-managed, hidden from API)
 	PullSecret corev1.LocalObjectReference `json:"pullSecret"`
 	// Release is service-set (platform-managed, hidden from API)
 	Release hypershiftv1beta1.Release `json:"release"`
 	// Replicas is service-set (platform-managed, hidden from API)
 	Replicas *int32 `json:"replicas"`
+	// Scheduler is service-set (platform-managed, hidden from API)
+	Scheduler *SchedulerConfiguration `json:"scheduler"`
 	// SecretEncryption is service-set (platform-managed, hidden from API)
 	SecretEncryption *hypershiftv1beta1.SecretEncryptionSpec `json:"secretEncryption"`
 	// ServiceAccountSigningKey is service-set (platform-managed, hidden from API)
@@ -99,10 +141,16 @@ type ServiceSetFields struct {
 	Services []hypershiftv1beta1.ServicePublishingStrategyMapping `json:"services"`
 	// SshKey is service-set (platform-managed, hidden from API)
 	SshKey corev1.LocalObjectReference `json:"sshKey"`
+	// SystemdUnits is service-set (platform-managed, hidden from API)
+	SystemdUnits string `json:"systemdUnits"`
 	// Taints is service-set (platform-managed, hidden from API)
 	Taints []hypershiftv1beta1.Taint `json:"taints"`
 	// Tolerations is service-set (platform-managed, hidden from API)
 	Tolerations []corev1.Toleration `json:"tolerations"`
+	// TopologyManagerPolicy is service-set (platform-managed, hidden from API)
+	TopologyManagerPolicy *string `json:"topologyManagerPolicy"`
+	// TopologyManagerScope is service-set (platform-managed, hidden from API)
+	TopologyManagerScope *string `json:"topologyManagerScope"`
 	// TuningConfig is service-set (platform-managed, hidden from API)
 	TuningConfig []corev1.LocalObjectReference `json:"tuningConfig"`
 	// UpdateService is service-set (platform-managed, hidden from API)

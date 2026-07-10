@@ -64,8 +64,8 @@ func (g *CRDVariantGenerator) GenerateVariant(inputPath string, outputPath strin
 
 type filterContext struct {
 	featureSet FeatureSet
-	inSchema   bool     // true when inside openAPIV3Schema.properties
-	fieldPath  string   // current field path (e.g., "spec.tags")
+	inSchema   bool   // true when inside openAPIV3Schema.properties
+	fieldPath  string // current field path (e.g., "spec.tags")
 }
 
 // filterCRDNode walks the CRD YAML tree and removes fields not available in the feature set

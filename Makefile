@@ -30,6 +30,7 @@ MARKER_SCANNER ?= $(shell pwd)/bin/marker-scanner
 PASSTHROUGH_GEN ?= $(shell pwd)/bin/passthrough-gen
 OPENAPI_GEN ?= $(shell pwd)/bin/openapi-gen
 CONVERSION_GEN ?= $(shell pwd)/bin/conversion-gen
+VERIFY_CONFIGURATION ?= $(shell pwd)/bin/verify-configuration
 
 .PHONY: help
 help: ## Display this help
@@ -65,7 +66,7 @@ tidy: ## Run go mod tidy
 	$(GOMOD) tidy
 
 .PHONY: verify
-verify: fmt vet test verify-conversion ## Run all verification steps
+verify: fmt vet test verify-conversion verify-configuration ## Run all verification steps
 
 ##@ Code Generation
 
@@ -160,6 +161,14 @@ verify-conversion: $(CONVERSION_GEN) generate-registry ## Verify conversion code
 	)
 	@rm -rf /tmp/conversion-check
 	@echo "✓ Conversion code is up to date"
+
+.PHONY: verify-configuration
+verify-configuration: $(VERIFY_CONFIGURATION) ## Verify all configuration fields have required markers
+	@echo "Verifying configuration field markers..."
+	@$(VERIFY_CONFIGURATION) $(API_DIR)/configuration.go
+
+$(VERIFY_CONFIGURATION): ## Build verify-configuration tool
+	$(GOBUILD) -o $(VERIFY_CONFIGURATION) ./cmd/verify-configuration
 
 .PHONY: featuregate-info
 featuregate-info: ## Show feature gate registry and field counts per feature set

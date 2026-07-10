@@ -74,12 +74,24 @@ func UnprojectCluster(spec *rest.ClusterSpec, enrichment *conversion.ServiceSetF
 // projectHostedClusterSpecPassthrough converts CRD type to REST
 func projectHostedClusterSpecPassthrough(crd v1alpha1.HostedClusterSpecPassthrough) rest.HostedClusterSpecPassthrough {
 	return rest.HostedClusterSpecPassthrough{
+		Channel: crd.Channel,
+		AutoNode: crd.AutoNode,
+		Configuration: crd.Configuration,
+		OperatorConfiguration: crd.OperatorConfiguration,
+		FIPS: crd.FIPS,
+		PausedUntil: crd.PausedUntil,
 	}
 }
 
 // unprojectHostedClusterSpecPassthrough converts REST type to CRD
 func unprojectHostedClusterSpecPassthrough(rest rest.HostedClusterSpecPassthrough) v1alpha1.HostedClusterSpecPassthrough {
 	return v1alpha1.HostedClusterSpecPassthrough{
+		Channel: rest.Channel,
+		AutoNode: rest.AutoNode,
+		Configuration: rest.Configuration,
+		OperatorConfiguration: rest.OperatorConfiguration,
+		FIPS: rest.FIPS,
+		PausedUntil: rest.PausedUntil,
 	}
 }
 

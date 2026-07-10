@@ -238,6 +238,10 @@ var FieldRegistry = map[string]FieldMeta{
 		WriteMode: ServiceSet,
 		Hidden:    true,
 	},
+	"machineConfig": {
+		FieldPath: "machineConfig",
+		WriteMode: ServiceSet,
+	},
 	"machineConfig.allowedKernelArguments": {
 		FieldPath:   "machineConfig.allowedKernelArguments",
 		WriteMode:   Immutable,
@@ -512,6 +516,10 @@ var FieldRegistry = map[string]FieldMeta{
 		FieldPath: "spec.hostedCluster.configuration.kubelet.topologyManagerScope",
 		WriteMode: ServiceSet,
 		Hidden:    true,
+	},
+	"spec.hostedCluster.configuration.machineConfig": {
+		FieldPath: "spec.hostedCluster.configuration.machineConfig",
+		WriteMode: ServiceSet,
 	},
 	"spec.hostedCluster.configuration.machineConfig.allowedKernelArguments": {
 		FieldPath:   "spec.hostedCluster.configuration.machineConfig.allowedKernelArguments",
