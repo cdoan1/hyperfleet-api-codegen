@@ -221,7 +221,9 @@ func (h *ClusterHandler) CreateCluster(ctx context.Context, req *CreateClusterRe
 
 > "I was also thinking in the flow that would perform the validation can/can't write, it should be the PlatformAPI I guess initially."
 
-**Answer**: Correct! Validation happens at **multiple layers** with different purposes:
+**Answer**: Correct! Validation happens at **multiple layers** with different purposes.
+
+**Important Context**: This answer incorporates the CRD client-side validation design from [ROSAENG-61569](https://redhat.atlassian.net/browse/ROSAENG-61569) ([design doc](./crd-client-validation.md)), which adds **CRD schema validation** to the existing write-mode/feature-gate validation.
 
 ### Validation Flow Architecture
 
@@ -236,10 +238,27 @@ func (h *ClusterHandler) CreateCluster(ctx context.Context, req *CreateClusterRe
 │                   Platform API (Go)                          │
 │  1. Lookup account from DynamoDB                             │
 │  2. Resolve feature gates (FeatureSet + EnabledGates)        │
-│  3. Call UnifiedValidator (pkg/validation)                   │
-│     • CRD schema validation (types, required, enums)         │
-│     • Write-mode validation (mutable/immutable/service-set)  │
-│     • Feature gate validation (gate enabled?)                │
+│  3. Call UnifiedValidator (ROSAENG-61569)                    │
+│     ┌────────────────────────────────────────────┐           │
+│     │ CRDValidator (NEW - design proposal)       │           │
+│     │  • Schema validation ONLY                  │           │
+│     │    - Types (string, int, bool)             │           │
+│     │    - Required fields                       │           │
+│     │    - Enums, patterns, ranges               │           │
+│     │    - Nested structure                      │           │
+│     │  • Loads feature-set-specific CRD variant  │           │
+│     │  • Uses k8s.io/apiextensions validation    │           │
+│     │  • NO write-mode awareness                 │           │
+│     └────────────────────────────────────────────┘           │
+│                         ↓                                     │
+│     ┌────────────────────────────────────────────┐           │
+│     │ Validator (EXISTING - implemented)         │           │
+│     │  • Write-mode validation ONLY              │           │
+│     │    - Mutable/Immutable/Service-Set         │           │
+│     │    - Feature-gate-aware write-modes        │           │
+│     │  • Feature gate access check               │           │
+│     │  • NO schema validation                    │           │
+│     └────────────────────────────────────────────┘           │
 │  4. Reject if validation fails → 400 Bad Request             │
 └────────────────────────┬────────────────────────────────────┘
                          │ (if valid)
@@ -282,6 +301,7 @@ func (h *ClusterHandler) CreateCluster(ctx context.Context, req *CreateClusterRe
 
 ```go
 // Example: Platform API handler
+// Uses validation library from hyperfleet-api-codegen POC repo
 func (api *ClusterAPI) CreateCluster(w http.ResponseWriter, r *http.Request) {
     var req CreateClusterRequest
     json.NewDecoder(r.Body).Decode(&req)
@@ -292,12 +312,15 @@ func (api *ClusterAPI) CreateCluster(w http.ResponseWriter, r *http.Request) {
     // Lookup account metadata from DynamoDB
     account, _ := api.accountStore.GetAccount(r.Context(), accountID)
     
-    // VALIDATION HAPPENS HERE
+    // VALIDATION HAPPENS HERE (ROSAENG-61569)
+    // UnifiedValidator combines:
+    //   1. CRDValidator - schema validation against feature-set-specific CRD
+    //   2. Validator - write-mode and feature gate rules
     validationReq := &validation.Request{
         Operation:    validation.OperationCreate,
         Fields:       extractFields(req.Spec),
-        FeatureSet:   account.FeatureSet,
-        EnabledGates: resolveGates(account),
+        FeatureSet:   account.FeatureSet,        // Determines which CRD variant to use
+        EnabledGates: resolveGates(account),     // Used for gate-aware write-modes
     }
     
     validator, _ := validation.NewUnifiedValidator()
@@ -310,10 +333,59 @@ func (api *ClusterAPI) CreateCluster(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-**What Gets Validated**:
-- ✅ Schema compliance (string vs int, required fields, enum values)
-- ✅ Write-mode rules (service-set fields rejected, immutable fields allowed on create)
-- ✅ Feature gate access (does customer have gate X enabled?)
+**What Gets Validated** (Two Layers):
+
+### Separation of Concerns: CRDValidator vs Validator
+
+**Critical Distinction**: These are **two independent validators** with no overlap:
+
+| Concern | CRDValidator (NEW) | Validator (EXISTING) |
+|---------|-------------------|----------------------|
+| **Purpose** | "Is the object structurally valid?" | "Can the customer write this field?" |
+| **Validates** | Schema compliance | Write permissions |
+| **Uses** | CRD OpenAPI schema | Field metadata registry |
+| **Aware of** | Feature Sets (for CRD variant selection) | Write-modes + Feature Gates |
+| **Example** | "displayName must be a string" | "displayName is mutable, customer can set it" |
+| **Example** | "release.version is required" | "region is service-set, customer cannot set it" |
+
+**Why Two Validators?**
+- **CRDValidator** knows nothing about write-modes (mutable/immutable/service-set) - it only knows the CRD schema
+- **Validator** knows nothing about types/enums/patterns - it only knows field permissions
+- They're orthogonal concerns that both need to pass
+
+1. **CRDValidator** - Schema Validation (NEW - from ROSAENG-61569 design):
+   - ✅ Type constraints (string vs int, number ranges)
+   - ✅ Required fields (per CRD schema)
+   - ✅ Enum values (allowed values check)
+   - ✅ Pattern matching (regex validation)
+   - ✅ Structural constraints (min/max length, array uniqueness)
+   - ✅ Feature set enforcement (Default customers can't use DevPreview fields that don't exist in their CRD variant)
+   - Uses the correct CRD variant based on `account.FeatureSet`
+   - **Does NOT check**: write-mode, customer permissions
+
+2. **Validator** - Field-Level Permissions (EXISTING - already implemented):
+   - ✅ Write-mode rules:
+     - `service-set` fields rejected if customer provides them
+     - `immutable` fields allowed on create, rejected if changed on update
+     - `mutable` fields always allowed
+   - ✅ Feature gate access (does customer have gate X enabled?)
+   - ✅ Feature-gate-aware write-modes (field mutability varies by gate)
+   - **Does NOT check**: types, required fields, enums
+
+**Example Validation Flow**:
+
+```go
+// Customer submits: { "displayName": 123, "region": "us-east-1" }
+
+// CRDValidator runs first:
+❌ FAIL: "displayName must be string, got int"
+✅ PASS: "region is a valid string"
+
+// If CRDValidator passed, Validator runs:
+❌ FAIL: "region is service-set, customer cannot provide it"
+```
+
+Both validators must pass for the request to succeed.
 
 #### Layer 2: Kubernetes API Server (DEFENSIVE)
 
@@ -381,9 +453,13 @@ From this POC repo's perspective:
 ```
 hyperfleet-api-codegen/              # This repo (POC)
 ├── pkg/validation/                  # Validation library
-│   ├── validator.go                 # Write-mode + feature gate validator
-│   ├── crdvalidator.go              # CRD schema validator (ROSAENG-61569)
-│   └── unified.go                   # Combines both
+│   ├── validator.go                 # Write-mode + feature gate validator (EXISTING)
+│   ├── crdvalidator.go              # CRD schema validator (NEW - ROSAENG-61569)
+│   ├── unified.go                   # Combines both (NEW - ROSAENG-61569)
+│   └── testdata/crds/               # Embedded CRD variants (NEW - ROSAENG-61569)
+│       ├── cluster_default.yaml
+│       ├── cluster_techpreview.yaml
+│       └── cluster_devpreview.yaml
 └── pkg/registry/                    # Generated field metadata
 
 platform-api/                        # Separate repo (Platform API service)
@@ -396,6 +472,23 @@ platform-api/                        # Separate repo (Platform API service)
 ```
 
 The **Platform API imports this POC repo's `pkg/validation` package** and uses it at request time after looking up account metadata from DynamoDB.
+
+### Implementation Status
+
+**Current State** (As of 2026-07-10):
+- ✅ `validator.go` - Write-mode and feature gate validation (implemented)
+- ✅ `pkg/registry/` - Field metadata registry (generated)
+- ✅ CRD variant generation - Feature-set-specific CRDs (implemented)
+- 🚧 `crdvalidator.go` - CRD schema validation (design phase - ROSAENG-61569)
+- 🚧 `unified.go` - Unified validator (design phase - ROSAENG-61569)
+
+**Design Proposal**: [CRD Client-Side Validation](./crd-client-validation.md)
+
+The design proposes a **four-phase implementation**:
+1. Phase 1 (Week 1): CRDValidator - standalone schema validation
+2. Phase 2 (Week 2): UnifiedValidator - combines schema + field validation
+3. Phase 3 (Week 3): CLI integration
+4. Phase 4 (Week 4): Compatibility testing (optional)
 
 ---
 
