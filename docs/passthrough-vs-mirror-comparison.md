@@ -245,6 +245,111 @@ Result: Customer gets safe, audited control of approved fields
 - `docs/configuration-types-pattern.md` - **NEW** - Pattern documentation
 - `pkg/registry/field_metadata.go` - 163 fields
 
+## FAQ: Common Questions About Passthrough vs Mirror Types
+
+### Q: If ClusterConfiguration becomes a passthrough type, can we make MachineConfig a passthrough type where we can expose individual fields?
+
+**A: No. Making ClusterConfiguration passthrough does NOT allow you to expose individual MachineConfig fields.**
+
+**Why not?**
+
+If `ClusterConfiguration` is passthrough, you're using **HyperShift's type**:
+
+```go
+// You use HyperShift's ClusterConfiguration (passthrough)
+type HostedClusterSpecPassthrough struct {
+    Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration,omitempty"`
+}
+```
+
+Inside HyperShift's `ClusterConfiguration`, the nested types are **also HyperShift's types** (or other upstream types):
+
+```go
+// From HyperShift's codebase (you DON'T control this)
+package v1beta1
+
+type ClusterConfiguration struct {
+    Kubelet *KubeletConfig        // HyperShift's or MCO's type
+    MachineConfig *MachineConfig  // HyperShift's or MCO's type
+}
+```
+
+**You cannot go into HyperShift's (or MCO's) codebase and add your markers:**
+
+```go
+// This is in HyperShift's repo or MCO's repo - you DON'T control it
+type MachineConfig struct {
+    SystemdUnits []SystemdUnit     // ❌ Cannot add +k8s:openapi-gen=false here
+    KernelArguments []string        // ❌ Cannot add +hyperfleet:write-mode here
+}
+```
+
+**The type ownership hierarchy**:
+
+**Passthrough chain (CANNOT control nested fields)**:
+```
+HostedClusterSpecPassthrough (yours)
+  └─ Configuration *hypershiftv1beta1.ClusterConfiguration (HyperShift's)
+       └─ MachineConfig *MachineConfig (HyperShift's or MCO's)
+            └─ SystemdUnits []SystemdUnit  ❌ Cannot add markers
+            └─ KernelArguments []string     ❌ Cannot add markers
+```
+
+**Owned chain (CAN control nested fields)**:
+```
+HostedClusterSpecPassthrough (yours)
+  └─ Configuration *ClusterConfiguration (yours - HyperFleet-owned)
+       └─ MachineConfig *MachineConfigSpec (yours - HyperFleet-owned)
+            └─ SystemdUnits []SystemdUnit  ✅ Can add +k8s:openapi-gen=false
+            └─ AllowedKernelArguments []string ✅ Can add +hyperfleet:write-mode
+```
+
+**Key insight**: To get granular field control, you must **own the entire type chain** from top to bottom. Making one level passthrough doesn't help if the nested levels are still upstream types you don't control.
+
+### Q: Why does HostedClusterSpec passthrough work then?
+
+**A: Because we only need top-level field control on HostedClusterSpec.**
+
+With `HostedClusterSpec` passthrough, we can mark **top-level fields**:
+
+```go
+type HostedClusterSpecPassthrough struct {
+    // ✅ We control THIS field (top-level)
+    // +k8s:openapi-gen=false
+    // +hyperfleet:write-mode=service-set
+    ClusterID string `json:"clusterID,omitempty"`
+    
+    // ✅ We control THIS field (top-level)
+    // +hyperfleet:write-mode=mutable
+    Channel string `json:"channel,omitempty"`
+}
+```
+
+We don't need to expose a **subset** of fields inside `ClusterID` or `Channel` - they're primitive types.
+
+But for `Configuration`, we DO need subset control:
+- Expose `Configuration.Kubelet.PodPidsLimit` (safe)
+- Hide `Configuration.Kubelet.EvictionHard` (dangerous)
+
+Passthrough cannot do this because we don't own the nested type definitions.
+
+### Q: Can we make JUST KubeletConfig and MachineConfigSpec passthrough types?
+
+**A: No, they don't exist as exported types in HyperShift.**
+
+From checking HyperShift's API package:
+- HyperShift's `ClusterConfiguration` does NOT have `Kubelet` or `MachineConfig` fields
+- NodePool accepts kubelet/machine config as **opaque YAML in ConfigMaps**
+- These are machine-config-operator (MCO) types, not HyperShift types
+- MCO types are loaded dynamically, not part of HyperShift's API schema
+
+Even if they existed:
+- We'd need to import from MCO (`github.com/openshift/machine-config-operator/...`)
+- We still couldn't add markers to MCO's type definitions
+- Same all-or-nothing problem
+
+**The only solution**: HyperFleet-owned mirror types where we control every field.
+
 ## Conclusion
 
 **The passthrough approach CANNOT expose individual kubelet/machine config fields to customers.**
