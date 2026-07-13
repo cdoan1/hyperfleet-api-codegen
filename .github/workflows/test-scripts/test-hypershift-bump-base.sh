@@ -1,18 +1,22 @@
 #!/bin/bash
 # Base script for testing HyperShift version bumps
-# Called by test-hypershift-bump.sh and test-hypershift-bump-latest.sh with parameters
+# Usage:
+#   test-hypershift-bump-base.sh v0.1.72  # Test bump to specific version
+#   test-hypershift-bump-base.sh latest   # Test bump to latest version
 
 set -e
 
-# Parameters (passed by caller)
-BUMP_TYPE="${1:-latest}"  # "specific" or "latest"
-VERSION="${2:-}"          # Version for specific bump (e.g., v0.1.72)
+# Parameter: version string (e.g., "v0.1.72") or "latest"
+VERSION_ARG="${1:-latest}"
 
-# Display appropriate title
-if [ "$BUMP_TYPE" = "specific" ]; then
-    echo "=== Testing HyperShift Version Bump to $VERSION ==="
-else
+# Determine if this is a specific version or latest
+if [ "$VERSION_ARG" = "latest" ]; then
+    BUMP_TYPE="latest"
     echo "=== Testing HyperShift Latest Version Bump Workflow ==="
+else
+    BUMP_TYPE="specific"
+    VERSION="$VERSION_ARG"
+    echo "=== Testing HyperShift Version Bump to $VERSION ==="
 fi
 echo ""
 

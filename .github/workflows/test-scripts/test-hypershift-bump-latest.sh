@@ -6,5 +6,5 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Call base script with "latest" mode
+# Call base script with "latest"
 "$SCRIPT_DIR/test-hypershift-bump-base.sh" "latest"
