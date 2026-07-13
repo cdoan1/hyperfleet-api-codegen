@@ -135,13 +135,24 @@ type MachineConfigSpec struct {
 
 **Platform response**:
 ```
-❌ Cannot expose podPidsLimit without also exposing:
-  - evictionHard (dangerous - affects cluster stability)
-  - allowedUnsafeSysctls (dangerous - kernel-level access)
-  - cpuManagerPolicy (complex - requires deep K8s knowledge)
-  
-Decision: Keep Configuration hidden (service-set)
-Result: Customer cannot tune kubelet settings
+❌ IMPOSSIBLE with passthrough approach
+
+Why:
+1. Configuration field is HIDDEN (+k8s:openapi-gen=false)
+2. Configuration field is SERVICE-SET (platform-only)
+3. HyperShift's ClusterConfiguration is opaque - cannot add markers to nested fields
+
+Options:
+a) Expose entire Configuration object (all-or-nothing)
+   → Exposes dangerous fields (evictionHard, allowedUnsafeSysctls)
+   → Security risk
+
+b) Keep Configuration hidden (current state at v0.1.1)
+   → Customer cannot tune ANY kubelet settings
+   → ✅ Safe, ❌ Inflexible
+
+Decision: Keep Configuration hidden
+Result: Customer cannot tune kubelet settings AT ALL
 ```
 
 ### Mirror Types Approach (main)
@@ -149,20 +160,45 @@ Result: Customer cannot tune kubelet settings
 
 **Platform response**:
 ```
-✅ podPidsLimit is exposed as mutable field
+✅ POSSIBLE with mirror types - granular field control
+
+Why:
+1. HyperFleet owns the type definition in configuration.go
+2. Can add markers to individual nested fields
+3. Can expose safe fields, hide dangerous fields
+
+Implementation:
+// api/v1alpha1/configuration.go
+type KubeletConfig struct {
+    // ✅ EXPOSED + MUTABLE - safe for customers
+    // +hyperfleet:write-mode=mutable
+    PodPidsLimit *int64 `json:"podPidsLimit,omitempty"`
+    
+    // ❌ HIDDEN + SERVICE-SET - dangerous, platform-only
+    // +k8s:openapi-gen=false
+    // +hyperfleet:write-mode=service-set
+    EvictionHard map[string]string `json:"evictionHard,omitempty"`
+}
 
 Customer can set in API:
 {
   "spec": {
     "kubelet": {
-      "podPidsLimit": 8192
+      "podPidsLimit": 8192  // ✅ Allowed
     }
   }
 }
 
-Platform hides dangerous fields (evictionHard, allowedUnsafeSysctls)
-Platform manages complex fields (cpuManagerPolicy)
-Result: Customer gets safe, audited control
+Customer CANNOT set:
+{
+  "spec": {
+    "kubelet": {
+      "evictionHard": {...}  // ❌ Hidden, rejected by validator
+    }
+  }
+}
+
+Result: Customer gets safe, audited control of approved fields
 ```
 
 ## Recommendation
@@ -211,12 +247,39 @@ Result: Customer gets safe, audited control
 
 ## Conclusion
 
-Both approaches are valid. The choice depends on requirements:
+**The passthrough approach CANNOT expose individual kubelet/machine config fields to customers.**
 
-- **Need granular control?** → Mirror Types
-- **Want automatic tracking?** → Passthrough
-- **Compliance requirements?** → Mirror Types (field-level audit trail)
-- **Rapid prototyping?** → Passthrough (less code)
+At v0.1.1, the Configuration field is:
+```go
+// +k8s:openapi-gen=false        ← HIDDEN from customer API
+// +hyperfleet:write-mode=service-set  ← Platform-managed only
+Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration,omitempty"`
+```
 
-The v0.1.1 passthrough approach is simpler but sacrifices granular control.
-The main branch mirror types approach is more complex but enables per-field security and customer flexibility.
+This is **by design** - it's an opaque HyperShift type we don't control.
+
+### When Passthrough Works
+✅ Use passthrough when you want ALL-OR-NOTHING control:
+- Hide entire Configuration (current v0.1.1 state) - **SAFE**
+- Expose entire Configuration (all fields visible) - **DANGEROUS**
+
+### When Mirror Types Are Required
+✅ Use mirror types when you need GRANULAR control:
+- Expose safe kubelet subset (podPidsLimit) ✅
+- Hide dangerous fields (evictionHard, allowedUnsafeSysctls) ✅
+- Per-field write-mode (mutable vs immutable vs service-set) ✅
+- Field-level feature gates (TechPreview for advanced settings) ✅
+
+### The Real Trade-Off
+
+**Passthrough**:
+- ✅ Simpler (less code)
+- ✅ Automatic HyperShift tracking
+- ❌ Cannot give customers ANY kubelet control without exposing EVERYTHING
+
+**Mirror Types**:
+- ❌ More complex (318 lines)
+- ❌ Manual HyperShift tracking
+- ✅ Can give customers SAFE SUBSET of kubelet control
+
+**If customers need ANY kubelet/machine config control, mirror types are the ONLY option.**

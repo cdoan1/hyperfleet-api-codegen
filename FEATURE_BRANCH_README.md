@@ -102,21 +102,43 @@ See `docs/passthrough-vs-mirror-comparison.md` for:
 
 **With Passthrough (this branch)**:
 ```
-❌ Cannot expose podPidsLimit without also exposing:
-  - evictionHard (dangerous - cluster stability)
-  - allowedUnsafeSysctls (dangerous - kernel access)
-  
-→ Keep entire Configuration hidden
-→ Customer cannot tune kubelet
+❌ IMPOSSIBLE - Configuration is opaque HyperShift type
+
+Current state at v0.1.1:
+// +k8s:openapi-gen=false           ← HIDDEN
+// +hyperfleet:write-mode=service-set    ← Platform-only
+Configuration *hypershiftv1beta1.ClusterConfiguration
+
+Options:
+1. Keep Configuration hidden → Customer gets ZERO kubelet control
+2. Expose Configuration visible → Customer gets ALL-OR-NOTHING control
+   - Exposes podPidsLimit ✅
+   - Also exposes evictionHard ❌ (dangerous)
+   - Also exposes allowedUnsafeSysctls ❌ (dangerous)
+
+→ Cannot give customers SAFE SUBSET
+→ Customer cannot tune kubelet safely
 ```
 
 **With Mirror Types (main branch)**:
 ```
-✅ Expose podPidsLimit as mutable field
-❌ Hide evictionHard (service-set, platform manages)
-  
+✅ POSSIBLE - HyperFleet owns the type definition
+
+HyperFleet creates mirror type in configuration.go:
+type KubeletConfig struct {
+    // ✅ Expose this - safe
+    // +hyperfleet:write-mode=mutable
+    PodPidsLimit *int64
+    
+    // ❌ Hide this - dangerous
+    // +k8s:openapi-gen=false
+    // +hyperfleet:write-mode=service-set
+    EvictionHard map[string]string
+}
+
+→ Customer gets SAFE SUBSET (podPidsLimit only)
+→ Platform blocks dangerous fields (evictionHard)
 → Customer gets safe, audited control
-→ Platform maintains stability guarantees
 ```
 
 ## Branch Status
