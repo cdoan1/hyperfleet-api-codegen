@@ -101,26 +101,32 @@ func FromHyperShiftNodePool(np *hypershiftv1beta1.NodePool) v1alpha1.NodePoolSta
 //
 // This is a simplified heuristic for POC purposes.
 // Production implementation would have more sophisticated logic.
+//
+// Priority order: Ready > AllNodesHealthy (unhealthy) > UpdatingVersion > default (pending)
 func computeNodePoolState(conditions []metav1.Condition) string {
 	if len(conditions) == 0 {
 		return "pending"
 	}
 
-	// Look for common condition types
+	// Check conditions in priority order
+	// 1. Ready=True means nodepool is ready (highest priority)
 	for _, cond := range conditions {
-		switch cond.Type {
-		case "Ready":
-			if cond.Status == "True" {
-				return "ready"
-			}
-		case "UpdatingVersion":
-			if cond.Status == "True" {
-				return "updating"
-			}
-		case "AllNodesHealthy":
-			if cond.Status == "False" {
-				return "degraded"
-			}
+		if cond.Type == "Ready" && cond.Status == "True" {
+			return "ready"
+		}
+	}
+
+	// 2. AllNodesHealthy=False means nodepool has unhealthy nodes
+	for _, cond := range conditions {
+		if cond.Type == "AllNodesHealthy" && cond.Status == "False" {
+			return "degraded"
+		}
+	}
+
+	// 3. UpdatingVersion=True means nodepool is updating
+	for _, cond := range conditions {
+		if cond.Type == "UpdatingVersion" && cond.Status == "True" {
+			return "updating"
 		}
 	}
 

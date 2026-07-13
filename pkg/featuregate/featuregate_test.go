@@ -1,6 +1,7 @@
 package featuregate
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -109,4 +110,105 @@ func TestFilterCRDFields(t *testing.T) {
 	t.Logf("Default: %d fields", len(defaultFields))
 	t.Logf("TechPreview: %d fields", len(techPreviewFields))
 	t.Logf("DevPreview: %d fields", len(devPreviewFields))
+}
+
+func TestFieldsForFeatureSet(t *testing.T) {
+	tests := []struct {
+		name       string
+		featureSet FeatureSet
+		minFields  int // Minimum expected fields (depends on registry)
+	}{
+		{"Default has GA fields only", Default, 1},
+		{"TechPreview has GA + TechPreview fields", TechPreviewNoUpgrade, 1},
+		{"DevPreview has all fields", DevPreviewNoUpgrade, 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fields := FieldsForFeatureSet(tt.featureSet)
+			if len(fields) < tt.minFields {
+				t.Errorf("FieldsForFeatureSet(%s) returned %d fields, want at least %d",
+					tt.featureSet, len(fields), tt.minFields)
+			}
+
+			// Verify hierarchy: DevPreview >= TechPreview >= Default
+			if tt.featureSet == Default {
+				techFields := FieldsForFeatureSet(TechPreviewNoUpgrade)
+				if len(fields) > len(techFields) {
+					t.Errorf("Default has more fields (%d) than TechPreview (%d)",
+						len(fields), len(techFields))
+				}
+			}
+		})
+	}
+}
+
+func TestSummarizeFeatureSet(t *testing.T) {
+	summary := SummarizeFeatureSet()
+
+	// Should return a non-empty string
+	if summary == "" {
+		t.Error("SummarizeFeatureSet() returned empty string")
+	}
+
+	// Should mention all three feature sets
+	if !strings.Contains(summary, "Default") {
+		t.Error("Summary missing Default feature set")
+	}
+	if !strings.Contains(summary, "TechPreviewNoUpgrade") {
+		t.Error("Summary missing TechPreviewNoUpgrade feature set")
+	}
+	if !strings.Contains(summary, "DevPreviewNoUpgrade") {
+		t.Error("Summary missing DevPreviewNoUpgrade feature set")
+	}
+
+	// Should mention total fields
+	if !strings.Contains(summary, "Total fields") {
+		t.Error("Summary missing 'Total fields' information")
+	}
+
+	t.Logf("Summary:\n%s", summary)
+}
+
+func TestFeatureStageString(t *testing.T) {
+	tests := []struct {
+		stage FeatureStage
+		want  string
+	}{
+		{GA, "GA"},
+		{TechPreview, "TechPreview"},
+		{DevPreview, "DevPreview"},
+		{FeatureStage(999), "Unknown"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.want, func(t *testing.T) {
+			got := tt.stage.String()
+			if got != tt.want {
+				t.Errorf("FeatureStage.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMaxStage(t *testing.T) {
+	tests := []struct {
+		name       string
+		featureSet FeatureSet
+		want       FeatureStage
+	}{
+		{"Default max is GA", Default, GA},
+		{"TechPreview max is TechPreview", TechPreviewNoUpgrade, TechPreview},
+		{"DevPreview max is DevPreview", DevPreviewNoUpgrade, DevPreview},
+		{"Unknown defaults to GA", FeatureSet("unknown"), GA},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.featureSet.MaxStage()
+			if got != tt.want {
+				t.Errorf("FeatureSet.MaxStage() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
