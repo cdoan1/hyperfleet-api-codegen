@@ -76,7 +76,7 @@ func projectHostedClusterSpecPassthrough(crd v1alpha1.HostedClusterSpecPassthrou
 	return rest.HostedClusterSpecPassthrough{
 		Channel: crd.Channel,
 		AutoNode: crd.AutoNode,
-		Configuration: crd.Configuration,
+		Configuration: ConvertClusterConfiguration_v1beta1_to_v1alpha1(crd.Configuration),
 		OperatorConfiguration: crd.OperatorConfiguration,
 		FIPS: crd.FIPS,
 		PausedUntil: crd.PausedUntil,
@@ -88,7 +88,7 @@ func unprojectHostedClusterSpecPassthrough(rest rest.HostedClusterSpecPassthroug
 	return v1alpha1.HostedClusterSpecPassthrough{
 		Channel: rest.Channel,
 		AutoNode: rest.AutoNode,
-		Configuration: rest.Configuration,
+		Configuration: ConvertClusterConfiguration_v1alpha1_to_v1beta1(rest.Configuration),
 		OperatorConfiguration: rest.OperatorConfiguration,
 		FIPS: rest.FIPS,
 		PausedUntil: rest.PausedUntil,

@@ -276,6 +276,12 @@ func (g *Generator) qualifyType(goType string) string {
 	isPointer := strings.HasPrefix(goType, "*")
 	baseType := strings.TrimPrefix(goType, "*")
 
+	// Strip any existing package qualifier to get the bare type name
+	// E.g., "hypershiftv1beta1.ClusterConfiguration" → "ClusterConfiguration"
+	if idx := strings.LastIndex(baseType, "."); idx != -1 {
+		baseType = baseType[idx+1:]
+	}
+
 	// Check if this is a v1alpha1 type that needs qualification
 	for _, t := range v1alpha1Types {
 		if baseType == t {
@@ -358,7 +364,8 @@ func (g *Generator) generateRESTType(ti *typeInfo) string {
 	needsV1alpha1 := false
 
 	for _, fi := range visibleFields {
-		goType := fi.GoType
+		// Use qualified type (which may have been rewritten by qualifyType)
+		goType := g.qualifyType(fi.GoType)
 		// Strip pointer and slice markers to get base type
 		goType = strings.TrimPrefix(goType, "*")
 		goType = strings.TrimPrefix(goType, "[]")
@@ -719,8 +726,9 @@ func (g *Generator) generateProjectSpecFunction(resource, specType string) strin
 				}
 
 				// Generate conversion helper call
-				// E.g., ConvertClusterConfiguration_v1alpha1_to_v1beta1(crd.Configuration)
-				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(crd.%s),\n",
+				// ProjectCluster converts CRD (v1beta1) to REST (v1alpha1), so we need v1beta1 → v1alpha1
+				// E.g., ConvertClusterConfiguration_v1beta1_to_v1alpha1(crd.Configuration)
+				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(crd.%s),\n",
 					fi.GoName, baseType, fi.GoName)
 				continue
 			}
@@ -815,9 +823,10 @@ func (g *Generator) generateUnprojectFunction(resource string) string {
 					baseType = baseType[idx+1:]
 				}
 
-				// Generate conversion helper call (reverse: v1beta1 → v1alpha1)
-				// E.g., ConvertClusterConfiguration_v1beta1_to_v1alpha1(spec.Configuration)
-				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(spec.%s),\n",
+				// Generate conversion helper call
+				// UnprojectCluster converts REST (v1alpha1) to CRD (v1beta1), so we need v1alpha1 → v1beta1
+				// E.g., ConvertClusterConfiguration_v1alpha1_to_v1beta1(spec.Configuration)
+				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(spec.%s),\n",
 					fi.GoName, baseType, fi.GoName)
 				continue
 			}
@@ -902,8 +911,8 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 							fieldBaseType = fieldBaseType[idx+1:]
 						}
 
-						// Use conversion helper
-						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(crd.%s),\n",
+						// Use conversion helper (CRD v1beta1 → REST v1alpha1)
+						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(crd.%s),\n",
 							pfi.GoName, fieldBaseType, pfi.GoName)
 						continue
 					}
@@ -934,8 +943,8 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 							fieldBaseType = fieldBaseType[idx+1:]
 						}
 
-						// Use conversion helper (reverse direction)
-						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(rest.%s),\n",
+						// Use conversion helper (REST v1alpha1 → CRD v1beta1)
+						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(rest.%s),\n",
 							pfi.GoName, fieldBaseType, pfi.GoName)
 						continue
 					}

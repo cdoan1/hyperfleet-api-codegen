@@ -94,7 +94,7 @@ type HostedClusterSpecPassthrough struct {
 	// configuration specifies configuration for individual OCP components in the cluster.
 	// Uses HyperFleet-owned types to enable granular marker control on nested fields.
 	// +hyperfleet:write-mode=service-set
-	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
+	Configuration *hypershiftv1beta1.ClusterConfiguration `json:"configuration,omitempty"`
 	// operatorConfiguration specifies configuration for individual OCP operators in the cluster.
 	// +hyperfleet:write-mode=service-set
 	OperatorConfiguration *hypershiftv1beta1.OperatorConfiguration `json:"operatorConfiguration,omitempty"`
