@@ -710,12 +710,16 @@ func (g *Generator) generateProjectSpecFunction(resource, specType string) strin
 			// Use auto-generated conversion helper
 			mapping := GetMirrorMapping(fi.GoName)
 			if mapping != nil {
-				// Extract base type name (e.g., "ClusterConfiguration" from "*ClusterConfiguration")
+				// Extract base type name (e.g., "ClusterConfiguration" from "*hypershiftv1beta1.ClusterConfiguration")
 				baseType := strings.TrimPrefix(fi.GoType, "*")
 				baseType = strings.TrimPrefix(baseType, "[]")
+				// Remove package qualifier (e.g., "hypershiftv1beta1." or "v1alpha1.")
+				if idx := strings.LastIndex(baseType, "."); idx != -1 {
+					baseType = baseType[idx+1:]
+				}
 
 				// Generate conversion helper call
-				// E.g., ConvertConfiguration_v1alpha1_to_v1beta1(crd.Configuration)
+				// E.g., ConvertClusterConfiguration_v1alpha1_to_v1beta1(crd.Configuration)
 				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(crd.%s),\n",
 					fi.GoName, baseType, fi.GoName)
 				continue
@@ -806,9 +810,13 @@ func (g *Generator) generateUnprojectFunction(resource string) string {
 				// Extract base type name
 				baseType := strings.TrimPrefix(fi.GoType, "*")
 				baseType = strings.TrimPrefix(baseType, "[]")
+				// Remove package qualifier
+				if idx := strings.LastIndex(baseType, "."); idx != -1 {
+					baseType = baseType[idx+1:]
+				}
 
 				// Generate conversion helper call (reverse: v1beta1 → v1alpha1)
-				// E.g., ConvertConfiguration_v1beta1_to_v1alpha1(spec.Configuration)
+				// E.g., ConvertClusterConfiguration_v1beta1_to_v1alpha1(spec.Configuration)
 				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(spec.%s),\n",
 					fi.GoName, baseType, fi.GoName)
 				continue
@@ -889,6 +897,10 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 						// Extract base type
 						fieldBaseType := strings.TrimPrefix(pfi.GoType, "*")
 						fieldBaseType = strings.TrimPrefix(fieldBaseType, "[]")
+						// Remove package qualifier
+						if idx := strings.LastIndex(fieldBaseType, "."); idx != -1 {
+							fieldBaseType = fieldBaseType[idx+1:]
+						}
 
 						// Use conversion helper
 						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(crd.%s),\n",
@@ -917,6 +929,10 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 						// Extract base type
 						fieldBaseType := strings.TrimPrefix(pfi.GoType, "*")
 						fieldBaseType = strings.TrimPrefix(fieldBaseType, "[]")
+						// Remove package qualifier
+						if idx := strings.LastIndex(fieldBaseType, "."); idx != -1 {
+							fieldBaseType = fieldBaseType[idx+1:]
+						}
 
 						// Use conversion helper (reverse direction)
 						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(rest.%s),\n",
