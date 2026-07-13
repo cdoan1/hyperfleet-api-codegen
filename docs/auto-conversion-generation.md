@@ -169,11 +169,47 @@ make test                  # ✅ Passes automatically!
 2. We only add **markers** to fields, not change their names or types
 3. All types are **public API types** (no unexported fields)
 
-## Future: Fully Automatic Generation
+## Implementation Status
 
-**Current state**: Conversion helpers are hand-written (this PR)
+### ✅ Phase 1: Manual Conversion Helpers (Complete)
 
-**Future enhancement**: Extend conversion-gen to auto-generate helpers
+**Files**:
+- `pkg/conversion/mirror_types.go` - Mirror type registry
+- `pkg/conversion/v1alpha1/generated_conversions.go` - Conversion helpers
+- `pkg/conversion/v1alpha1/generated_conversions_test.go` - Tests
+
+**What works**: JSON round-trip conversion between mirror types
+
+### ✅ Phase 2: Integrated Type Mismatch Detection (Complete)
+
+**Changes**:
+- `pkg/conversion/generator.go` - Extended to detect and use mirror type conversions
+- Conversion generator now automatically calls conversion helpers for registered mirror types
+
+**How it works**:
+```go
+// In generateProjectSpecFunction():
+if IsMirrorType(fi.GoName) {
+    mapping := GetMirrorMapping(fi.GoName)
+    if mapping != nil {
+        // Auto-generate conversion helper call
+        fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(crd.%s),\n",
+            fi.GoName, baseType, fi.GoName)
+    }
+}
+```
+
+**Testing**: All tests pass, ready for activation
+
+### ⏭️ Phase 3: Test with HyperShift Bump (Pending)
+
+**Next step**: Bump to HyperShift v0.1.78 and activate Configuration mapping
+
+## Future: Fully Automatic Helper Generation
+
+**Current state**: Conversion helpers are hand-written, integration is automatic
+
+**Future enhancement**: Auto-generate the helpers themselves during conversion-gen
 
 ### Phase 1: Type Mismatch Detection
 
