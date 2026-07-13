@@ -177,7 +177,17 @@ The passthrough generator resolves HyperShift types via go.mod (no local clone n
 3. Review diff for new/removed fields
 4. Add appropriate markers to new fields (default is hidden + service-set)
 5. Run `make manifests openapi` to regenerate CRDs and OpenAPI spec
-6. CI verifies all passthrough fields have required markers
+6. **Run full test suite** - `make test` to catch API evolution issues
+7. **Review test failures carefully** - HyperShift may change field types (e.g., int → *int32)
+8. CI verifies all passthrough fields have required markers
+
+**IMPORTANT - Test Guidelines for HyperShift API Evolution:**
+- HyperShift types evolve between versions (field types, nullability, validation rules)
+- Unit tests MUST NOT make brittle type assertions on HyperShift structs
+- Avoid testing specific pointer/value types on passthrough fields (these change upstream)
+- Focus tests on conversion logic, not upstream type structure
+- When CI fails after version bump, review if test assumptions are still valid
+- Example: AutoScaling.Min changed from `int` to `*int32` between v0.1.70 and v0.1.72
 
 Current baseline: HyperShift v0.1.70
 

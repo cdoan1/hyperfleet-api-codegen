@@ -324,9 +324,47 @@ make generate-conversion # Update REST conversions
 **6. Run tests and verify**
 
 ```bash
-make test
+make test    # May reveal API evolution issues
 make verify
 ```
+
+**⚠️ IMPORTANT: HyperShift API Evolution**
+
+HyperShift types evolve between versions. Tests may fail after version bumps due to:
+- Field type changes (e.g., `int` → `*int32`, `string` → `*string`)
+- Nullability changes (value type → pointer type)
+- Validation rule changes
+- Struct reshaping
+
+**Test Guidelines:**
+- ❌ **Don't test specific pointer/value types** on HyperShift passthrough fields
+- ❌ **Don't make brittle assertions** about upstream struct layout
+- ✅ **Do test conversion logic** (our code, not HyperShift's types)
+- ✅ **Do test field visibility** and write-mode enforcement
+- ✅ **Do review test failures** carefully - may indicate legitimate upstream changes
+
+**Example API evolution (v0.1.70 → v0.1.72):**
+```go
+// v0.1.70
+type NodePoolAutoScaling struct {
+    Min int `json:"min"`
+    Max int `json:"max"`
+}
+
+// v0.1.72
+type NodePoolAutoScaling struct {
+    Min *int32 `json:"min,omitempty"`  // Now pointer + int32
+    Max int32  `json:"max"`             // Now int32
+}
+```
+
+If tests assert `Min == 2`, they'll fail on the pointer dereference after upgrade.
+
+**When tests fail after HyperShift bump:**
+1. Read the error - is it a type mismatch on a passthrough field?
+2. Check if the field type changed upstream (`go doc github.com/openshift/hypershift/api/...`)
+3. Remove brittle assertions on upstream types
+4. Keep tests focused on our conversion logic, not HyperShift's structure
 
 **7. Commit the changes**
 
