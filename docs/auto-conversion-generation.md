@@ -40,6 +40,52 @@ var mirrorTypeMappings = []MirrorTypeMapping{
 - The upstream HyperShift type exists but has a different package path
 - Conversion functions need to convert between the two types
 
+### Mirror Types and Field Registry
+
+**Important**: Mirror type markers ARE included in the field registry!
+
+The marker scanner (`cmd/marker-scanner`) reads ALL Go files in `api/v1alpha1/`:
+- `hostedclusterspec.passthrough.go` - Passthrough types (~103 fields)
+- `configuration.go` - Mirror types (~60 fields: kubelet.*, machineConfig.*)
+- `cluster_types.go` - Wrapper types
+
+**Total**: 163 fields tracked with markers
+
+**This means**:
+- ✅ Runtime validation works for mirror type fields
+- ✅ Feature gates apply to kubelet/machine config fields  
+- ✅ Write-mode enforcement prevents customers from touching service-set fields
+- ✅ OpenAPI generation correctly hides fields marked `+k8s:openapi-gen=false`
+
+**Example**:
+```go
+// From api/v1alpha1/configuration.go
+type KubeletConfig struct {
+    // ✅ VISIBLE + MUTABLE
+    // +hyperfleet:write-mode=mutable
+    PodPidsLimit *int64 `json:"podPidsLimit,omitempty"`
+    
+    // ❌ HIDDEN + SERVICE-SET
+    // +k8s:openapi-gen=false
+    // +hyperfleet:write-mode=service-set
+    EvictionHard map[string]string `json:"evictionHard,omitempty"`
+}
+```
+
+**Generates registry entries**:
+```go
+"spec.hostedCluster.configuration.kubelet.podPidsLimit": {
+    FieldPath: "spec.hostedCluster.configuration.kubelet.podPidsLimit",
+    WriteMode: Mutable,
+}
+
+"spec.hostedCluster.configuration.kubelet.evictionHard": {
+    FieldPath: "spec.hostedCluster.configuration.kubelet.evictionHard",
+    WriteMode: ServiceSet,
+    Hidden:    true,
+}
+```
+
 ## Auto-Generated Conversion Helpers
 
 **File**: `pkg/conversion/v1alpha1/generated_conversions.go`
