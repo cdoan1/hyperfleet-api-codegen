@@ -211,6 +211,78 @@ jobs:
           git clean -fd
           echo "Repository restored to original state"
 
+  test-hypershift-bump-v0-1-78:
+    name: Test HyperShift v0.1.78 Bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for git operations
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Build tools
+        run: make build-tools
+
+      - name: Configure git for test
+        run: |
+          git config user.name "CI Test Bot"
+          git config user.email "ci@hyperfleet-api-codegen.test"
+
+      - name: Run HyperShift v0.1.78 bump test
+        run: .github/workflows/test-scripts/test-hypershift-bump-base.sh "v0.1.78"
+
+      - name: Show diff summary
+        if: always()
+        run: |
+          echo "=== Git Diff Summary ==="
+          git diff --stat || echo "No changes"
+
+      - name: Show detailed changes in passthrough file
+        if: always()
+        run: |
+          echo "=== Changes in hostedclusterspec.passthrough.go ==="
+          if git diff --quiet api/v1alpha1/hostedclusterspec.passthrough.go; then
+            echo "No changes to passthrough file"
+          else
+            git diff --unified=3 api/v1alpha1/hostedclusterspec.passthrough.go | head -100
+          fi
+
+      - name: Show field count changes
+        if: always()
+        run: |
+          echo "=== Field Count Summary ==="
+          echo "Current registry field count:"
+          cat pkg/registry/field_metadata.json | jq '. | length' || echo "Could not parse JSON"
+
+          echo ""
+          echo "Fields with write-mode markers:"
+          cat pkg/registry/field_metadata.json | jq '[.[] | select(.writeMode != "")] | length' || echo "Could not parse JSON"
+
+          echo ""
+          echo "Hidden fields:"
+          cat pkg/registry/field_metadata.json | jq '[.[] | select(.hidden == true)] | length' || echo "Could not parse JSON"
+
+          echo ""
+          echo "Feature-gated fields:"
+          cat pkg/registry/field_metadata.json | jq '[.[] | select(.featureGate != "")] | length' || echo "Could not parse JSON"
+
+      - name: Restore original state
+        if: always()
+        run: |
+          git reset --hard HEAD
+          git clean -fd
+          echo "Repository restored to original state"
+
   test-hypershift-bump-latest:
     name: Test HyperShift Latest Version Bump
     runs-on: ubuntu-latest
