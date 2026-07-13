@@ -1,7 +1,7 @@
 # HyperFleet API Codegen
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/cdoan1/hyperfleet-api-codegen)](https://goreportcard.com/report/github.com/cdoan1/hyperfleet-api-codegen)
-[![Coverage](https://img.shields.io/badge/coverage-61%25-brightgreen)](https://github.com/cdoan1/hyperfleet-api-codegen)
+[![Coverage](https://img.shields.io/badge/coverage-30%25-yellow)](https://github.com/cdoan1/hyperfleet-api-codegen)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/cdoan1/hyperfleet-api-codegen)](go.mod)
 
 Code generation tools for managing the HyperFleet API: HyperShift CRD → HyperFleet CRD → Platform API OpenAPI.
