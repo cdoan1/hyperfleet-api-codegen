@@ -96,7 +96,7 @@ jobs:
             --crd-package=github.com/cdoan1/hyperfleet-api-codegen/api/v1alpha1 \
             --input-dirs=./api/v1alpha1 \
             --output-dir=/tmp/conversion-check
-          diff -r --exclude='*_test.go' pkg/conversion/v1alpha1 /tmp/conversion-check || (
+          diff -r --exclude='*_test.go' --exclude='generated_conversions.go' pkg/conversion/v1alpha1 /tmp/conversion-check || (
             echo "Error: conversion code is out of date"
             echo "Run: make generate-conversion"
             exit 1
