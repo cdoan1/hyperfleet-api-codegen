@@ -51,9 +51,29 @@ if [ -f "api/v1alpha1/zz_generated.passthrough.go" ]; then
 fi
 echo "✓ zz_generated.passthrough.go cleaned up"
 
-# Step 3: Regenerate registry
+# Step 3: Activate mirror type mappings
 echo ""
-echo "Step 3: Regenerating field registry..."
+echo "Step 3: Activating mirror type mappings..."
+# Uncomment Configuration mapping to enable auto-conversion
+sed -i.bak '/FieldName:.*"Configuration"/,/},/ s/^[[:space:]]*# //' pkg/conversion/mirror_types.go
+rm -f pkg/conversion/mirror_types.go.bak
+echo "✓ Configuration mapping activated"
+
+# Step 4: Regenerate conversion code
+echo ""
+echo "Step 4: Regenerating conversion code..."
+make generate-conversion
+
+# Verify conversion files exist
+if [ ! -f "pkg/conversion/v1alpha1/cluster.go" ]; then
+    echo "✗ pkg/conversion/v1alpha1/cluster.go not found"
+    exit 1
+fi
+echo "✓ Conversion code generated"
+
+# Step 5: Regenerate registry
+echo ""
+echo "Step 5: Regenerating field registry..."
 make generate-registry
 
 # Verify registry files exist
@@ -67,9 +87,9 @@ if [ ! -f "pkg/registry/field_metadata.json" ]; then
 fi
 echo "✓ Field registry files generated"
 
-# Step 4: Regenerate OpenAPI
+# Step 6: Regenerate OpenAPI
 echo ""
-echo "Step 4: Regenerating OpenAPI schema..."
+echo "Step 6: Regenerating OpenAPI schema..."
 make generate-openapi
 
 # Verify OpenAPI file exists
@@ -88,9 +108,13 @@ echo ""
 # 1. go.mod - HyperShift version bump (if not already latest)
 # 2. go.sum - dependency checksums (if not already latest)
 # 3. api/v1alpha1/hostedclusterspec.passthrough.go - potentially new/changed fields
-# 4. pkg/registry/field_metadata.go - if new fields added
-# 5. pkg/registry/field_metadata.json - if new fields added
-# 6. openapi/openapi.json - if new visible fields added
+# 4. pkg/conversion/mirror_types.go - Configuration mapping activated
+# 5. pkg/conversion/v1alpha1/cluster.go - generated conversion functions
+# 6. pkg/conversion/v1alpha1/rest/*.go - generated REST types
+# 7. pkg/conversion/types.go - generated ServiceSetFields
+# 8. pkg/registry/field_metadata.go - if new fields added
+# 9. pkg/registry/field_metadata.json - if new fields added
+# 10. openapi/openapi.json - if new visible fields added
 
 CHANGED_FILES=$(git status --porcelain | wc -l)
 echo "Number of changed files: $CHANGED_FILES"
@@ -116,11 +140,26 @@ else
             api/v1alpha1/hostedclusterspec.passthrough.go)
                 echo "✓ Expected: $FILE (upstream API changes)"
                 ;;
+            pkg/conversion/mirror_types.go)
+                echo "✓ Expected: $FILE (Configuration mapping activated)"
+                ;;
+            pkg/conversion/v1alpha1/cluster.go|pkg/conversion/v1alpha1/nodepool.go)
+                echo "✓ Expected: $FILE (generated conversion functions)"
+                ;;
+            pkg/conversion/v1alpha1/rest/*.go)
+                echo "✓ Expected: $FILE (generated REST types)"
+                ;;
+            pkg/conversion/types.go)
+                echo "✓ Expected: $FILE (generated ServiceSetFields)"
+                ;;
             pkg/registry/field_metadata.go|pkg/registry/field_metadata.json)
                 echo "✓ Expected: $FILE (registry update from new fields)"
                 ;;
             openapi/openapi.json)
                 echo "✓ Expected: $FILE (OpenAPI update from new visible fields)"
+                ;;
+            .github/workflows/test-scripts/test-hypershift-bump-latest.sh)
+                echo "✓ Expected: $FILE (CI test script updates)"
                 ;;
             *)
                 echo "✗ Unexpected: $FILE"
@@ -138,9 +177,9 @@ else
     fi
 fi
 
-# Step 6: Verify tests still pass
+# Step 7: Verify tests still pass
 echo ""
-echo "Step 6: Running tests..."
+echo "Step 7: Running tests..."
 make test
 
 echo ""
@@ -154,7 +193,9 @@ if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
 else
     echo "  - Status: Updated to latest"
 fi
+echo "  - Activated Configuration mirror type mapping"
 echo "  - Regenerated passthrough types"
+echo "  - Regenerated conversion code (auto-conversion for type changes)"
 echo "  - Regenerated field registry"
 echo "  - Regenerated OpenAPI schema"
 echo "  - All tests passed"
