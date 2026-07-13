@@ -9,7 +9,7 @@ import (
 	v1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
 )
 
-func TestConvertConfiguration_v1alpha1_to_v1beta1(t *testing.T) {
+func TestConvertClusterConfiguration_v1alpha1_to_v1beta1(t *testing.T) {
 	tests := []struct {
 		name string
 		in   *v1alpha1.ClusterConfiguration
@@ -34,17 +34,17 @@ func TestConvertConfiguration_v1alpha1_to_v1beta1(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ConvertConfiguration_v1alpha1_to_v1beta1(tt.in)
+			got := ConvertClusterConfiguration_v1alpha1_to_v1beta1(tt.in)
 
 			if tt.in == nil {
 				if got != nil {
-					t.Errorf("ConvertConfiguration_v1alpha1_to_v1beta1() should return nil for nil input, got %v", got)
+					t.Errorf("ConvertClusterConfiguration_v1alpha1_to_v1beta1() should return nil for nil input, got %v", got)
 				}
 				return
 			}
 
 			if got == nil {
-				t.Errorf("ConvertConfiguration_v1alpha1_to_v1beta1() returned nil for non-nil input")
+				t.Errorf("ConvertClusterConfiguration_v1alpha1_to_v1beta1() returned nil for non-nil input")
 			}
 			// We just verify it doesn't panic and returns a non-nil result
 			// The actual field mapping is tested implicitly by JSON round-trip
@@ -52,7 +52,7 @@ func TestConvertConfiguration_v1alpha1_to_v1beta1(t *testing.T) {
 	}
 }
 
-func TestConvertConfiguration_v1beta1_to_v1alpha1(t *testing.T) {
+func TestConvertClusterConfiguration_v1beta1_to_v1alpha1(t *testing.T) {
 	tests := []struct {
 		name string
 		in   *v1beta1.ClusterConfiguration
@@ -69,17 +69,17 @@ func TestConvertConfiguration_v1beta1_to_v1alpha1(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ConvertConfiguration_v1beta1_to_v1alpha1(tt.in)
+			got := ConvertClusterConfiguration_v1beta1_to_v1alpha1(tt.in)
 
 			if tt.in == nil {
 				if got != nil {
-					t.Errorf("ConvertConfiguration_v1beta1_to_v1alpha1() should return nil for nil input, got %v", got)
+					t.Errorf("ConvertClusterConfiguration_v1beta1_to_v1alpha1() should return nil for nil input, got %v", got)
 				}
 				return
 			}
 
 			if got == nil {
-				t.Errorf("ConvertConfiguration_v1beta1_to_v1alpha1() returned nil for non-nil input")
+				t.Errorf("ConvertClusterConfiguration_v1beta1_to_v1alpha1() returned nil for non-nil input")
 			}
 			// We just verify it doesn't panic and returns a non-nil result
 		})

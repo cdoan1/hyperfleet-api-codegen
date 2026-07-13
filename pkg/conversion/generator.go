@@ -705,6 +705,23 @@ func (g *Generator) generateProjectSpecFunction(resource, specType string) strin
 			continue
 		}
 
+		// Check if this field is a mirror type that needs conversion
+		if IsMirrorType(fi.GoName) {
+			// Use auto-generated conversion helper
+			mapping := GetMirrorMapping(fi.GoName)
+			if mapping != nil {
+				// Extract base type name (e.g., "ClusterConfiguration" from "*ClusterConfiguration")
+				baseType := strings.TrimPrefix(fi.GoType, "*")
+				baseType = strings.TrimPrefix(baseType, "[]")
+
+				// Generate conversion helper call
+				// E.g., ConvertConfiguration_v1alpha1_to_v1beta1(crd.Configuration)
+				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(crd.%s),\n",
+					fi.GoName, baseType, fi.GoName)
+				continue
+			}
+		}
+
 		// Check if this is a custom type that needs conversion
 		needsHelper := false
 		baseType := strings.TrimPrefix(fi.GoType, "*") // Remove pointer
@@ -781,6 +798,23 @@ func (g *Generator) generateUnprojectFunction(resource string) string {
 			continue
 		}
 
+		// Check if this field is a mirror type that needs conversion
+		if IsMirrorType(fi.GoName) {
+			// Use auto-generated conversion helper (reverse direction)
+			mapping := GetMirrorMapping(fi.GoName)
+			if mapping != nil {
+				// Extract base type name
+				baseType := strings.TrimPrefix(fi.GoType, "*")
+				baseType = strings.TrimPrefix(baseType, "[]")
+
+				// Generate conversion helper call (reverse: v1beta1 → v1alpha1)
+				// E.g., ConvertConfiguration_v1beta1_to_v1alpha1(spec.Configuration)
+				fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(spec.%s),\n",
+					fi.GoName, baseType, fi.GoName)
+				continue
+			}
+		}
+
 		// Check if this is a custom type that needs conversion
 		needsHelper := false
 		baseType := strings.TrimPrefix(fi.GoType, "*")
@@ -848,6 +882,20 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 
 		for _, pfi := range pti.Fields {
 			if !pfi.Hidden {
+				// Check if this is a mirror type field
+				if IsMirrorType(pfi.GoName) {
+					mapping := GetMirrorMapping(pfi.GoName)
+					if mapping != nil {
+						// Extract base type
+						fieldBaseType := strings.TrimPrefix(pfi.GoType, "*")
+						fieldBaseType = strings.TrimPrefix(fieldBaseType, "[]")
+
+						// Use conversion helper
+						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1alpha1_to_v1beta1(crd.%s),\n",
+							pfi.GoName, fieldBaseType, pfi.GoName)
+						continue
+					}
+				}
 				fmt.Fprintf(&b, "\t\t%s: crd.%s,\n", pfi.GoName, pfi.GoName)
 			}
 		}
@@ -862,6 +910,20 @@ func (g *Generator) generatePassthroughHelpers(specType string) string {
 
 		for _, pfi := range pti.Fields {
 			if !pfi.Hidden {
+				// Check if this is a mirror type field
+				if IsMirrorType(pfi.GoName) {
+					mapping := GetMirrorMapping(pfi.GoName)
+					if mapping != nil {
+						// Extract base type
+						fieldBaseType := strings.TrimPrefix(pfi.GoType, "*")
+						fieldBaseType = strings.TrimPrefix(fieldBaseType, "[]")
+
+						// Use conversion helper (reverse direction)
+						fmt.Fprintf(&b, "\t\t%s: Convert%s_v1beta1_to_v1alpha1(rest.%s),\n",
+							pfi.GoName, fieldBaseType, pfi.GoName)
+						continue
+					}
+				}
 				fmt.Fprintf(&b, "\t\t%s: rest.%s,\n", pfi.GoName, pfi.GoName)
 			}
 		}

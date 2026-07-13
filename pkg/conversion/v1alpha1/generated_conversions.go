@@ -9,7 +9,7 @@ import (
 	v1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
 )
 
-// ConvertConfiguration_v1alpha1_to_v1beta1 converts HyperFleet's mirror Configuration to HyperShift's upstream type
+// ConvertClusterConfiguration_v1alpha1_to_v1beta1 converts HyperFleet's mirror Configuration to HyperShift's upstream type
 //
 // This function is automatically generated when a mirror type mapping exists for the Configuration field.
 // It enables conversion between HyperFleet-owned types (with granular markers) and HyperShift upstream types.
@@ -19,7 +19,7 @@ import (
 // - Works for most cases where field names/types match
 // - Handles nested struct conversions automatically
 // - Loses unexported fields (not an issue for our public API types)
-func ConvertConfiguration_v1alpha1_to_v1beta1(in *v1alpha1.ClusterConfiguration) *v1beta1.ClusterConfiguration {
+func ConvertClusterConfiguration_v1alpha1_to_v1beta1(in *v1alpha1.ClusterConfiguration) *v1beta1.ClusterConfiguration {
 	if in == nil {
 		return nil
 	}
@@ -40,10 +40,10 @@ func ConvertConfiguration_v1alpha1_to_v1beta1(in *v1alpha1.ClusterConfiguration)
 	return out
 }
 
-// ConvertConfiguration_v1beta1_to_v1alpha1 converts HyperShift's upstream Configuration to HyperFleet's mirror type
+// ConvertClusterConfiguration_v1beta1_to_v1alpha1 converts HyperShift's upstream Configuration to HyperFleet's mirror type
 //
 // This is the reverse conversion - used when reading from HyperShift and projecting to REST API.
-func ConvertConfiguration_v1beta1_to_v1alpha1(in *v1beta1.ClusterConfiguration) *v1alpha1.ClusterConfiguration {
+func ConvertClusterConfiguration_v1beta1_to_v1alpha1(in *v1beta1.ClusterConfiguration) *v1alpha1.ClusterConfiguration {
 	if in == nil {
 		return nil
 	}

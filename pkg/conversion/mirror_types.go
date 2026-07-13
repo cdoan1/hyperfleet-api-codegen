@@ -23,13 +23,16 @@ type MirrorTypeMapping struct {
 // - Generate conversion helper functions automatically
 // - Use helpers in ProjectX/UnprojectX conversion functions
 var mirrorTypeMappings = []MirrorTypeMapping{
-	{
-		FieldName:          "Configuration",
-		HyperFleetType:     "v1alpha1.ClusterConfiguration",
-		HyperShiftType:     "v1beta1.ClusterConfiguration",
-		ConversionStrategy: "json-roundtrip",
-	},
-	// Add more mirror types here as needed
+	// Configuration is commented out because currently both CRD and REST use v1alpha1.ClusterConfiguration
+	// Enable this when HyperShift's v1beta1.ClusterConfiguration diverges and we need conversion
+	// {
+	//     FieldName:          "Configuration",
+	//     HyperFleetType:     "v1alpha1.ClusterConfiguration",
+	//     HyperShiftType:     "v1beta1.ClusterConfiguration",
+	//     ConversionStrategy: "json-roundtrip",
+	// },
+
+	// Add more mirror types here as needed when types diverge between CRD and REST
 	// Example:
 	// {
 	//     FieldName:          "Kubelet",
