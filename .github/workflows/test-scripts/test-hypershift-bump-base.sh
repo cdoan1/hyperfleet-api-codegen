@@ -81,28 +81,30 @@ if [ -f "api/v1alpha1/zz_generated.passthrough.go" ]; then
 fi
 echo "✓ zz_generated.passthrough.go cleaned up"
 
-# Steps 3-4: Latest-only steps (mirror type activation and conversion generation)
-STEP_OFFSET=0
+# Step 3: Regenerate conversion code
+# CRITICAL: Always regenerate conversion code after HyperShift bump
+# HyperShift API types evolve (pointer/value changes, new fields) and
+# conversion code must be regenerated to handle these changes.
+echo ""
+echo "Step 3: Regenerating conversion code..."
+make generate-conversion
+
+# Verify conversion files exist
+if [ ! -f "pkg/conversion/v1alpha1/cluster.go" ]; then
+    echo "✗ pkg/conversion/v1alpha1/cluster.go not found"
+    exit 1
+fi
+echo "✓ Conversion code generated"
+
+# Step 4: Latest-only step (mirror type activation)
+STEP_OFFSET=1
 if [ "$BUMP_TYPE" = "latest" ]; then
-    # Step 3: Activate mirror type mappings
     echo ""
-    echo "Step 3: Activating mirror type mappings..."
+    echo "Step 4: Activating mirror type mappings..."
     # Uncomment Configuration mapping to enable auto-conversion
     sed -i.bak '/FieldName:.*"Configuration"/,/},/ s/^[[:space:]]*# //' pkg/conversion/mirror_types.go
     rm -f pkg/conversion/mirror_types.go.bak
     echo "✓ Configuration mapping activated"
-
-    # Step 4: Regenerate conversion code
-    echo ""
-    echo "Step 4: Regenerating conversion code..."
-    make generate-conversion
-
-    # Verify conversion files exist
-    if [ ! -f "pkg/conversion/v1alpha1/cluster.go" ]; then
-        echo "✗ pkg/conversion/v1alpha1/cluster.go not found"
-        exit 1
-    fi
-    echo "✓ Conversion code generated"
 
     STEP_OFFSET=2
 fi
@@ -187,27 +189,21 @@ else
                 fi
                 ;;
             pkg/conversion/v1alpha1/cluster.go|pkg/conversion/v1alpha1/nodepool.go)
-                # Latest-only expected file
-                if [ "$BUMP_TYPE" = "latest" ]; then
-                    echo "✓ Expected: $FILE (generated conversion functions)"
-                else
-                    echo "✗ Unexpected: $FILE"
-                    UNEXPECTED_CHANGES=$((UNEXPECTED_CHANGES + 1))
-                fi
+                # Expected for all bumps - conversion code regenerated to handle type changes
+                echo "✓ Expected: $FILE (generated conversion functions)"
                 ;;
             pkg/conversion/v1alpha1/rest/*.go)
-                # Latest-only expected file
-                if [ "$BUMP_TYPE" = "latest" ]; then
-                    echo "✓ Expected: $FILE (generated REST types)"
-                else
-                    echo "✗ Unexpected: $FILE"
-                    UNEXPECTED_CHANGES=$((UNEXPECTED_CHANGES + 1))
-                fi
+                # Expected for all bumps - REST types regenerated from CRD types
+                echo "✓ Expected: $FILE (generated REST types)"
                 ;;
             pkg/conversion/types.go)
+                # Expected for all bumps - ServiceSetFields regenerated from field registry
+                echo "✓ Expected: $FILE (generated ServiceSetFields)"
+                ;;
+            pkg/conversion/mirror_types.go)
                 # Latest-only expected file
                 if [ "$BUMP_TYPE" = "latest" ]; then
-                    echo "✓ Expected: $FILE (generated ServiceSetFields)"
+                    echo "✓ Expected: $FILE (Configuration mapping activated)"
                 else
                     echo "✗ Unexpected: $FILE"
                     UNEXPECTED_CHANGES=$((UNEXPECTED_CHANGES + 1))
