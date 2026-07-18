@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"os"
 	"strings"
+	"unicode"
 )
 
 // LoadSourceFiles loads and parses Go source files from a directory
@@ -68,6 +69,12 @@ func (g *Generator) GenerateTypeDef(typeName string) (*TypeDef, error) {
 		return nil, fmt.Errorf("type %s is not a struct", typeName)
 	}
 
+	// Auto-derive FieldPrefix from type name if not explicitly set
+	// e.g., "HostedClusterSpec" → "spec.hostedCluster", "NodePoolSpec" → "spec.nodePool"
+	if g.FieldPrefix == "" {
+		g.FieldPrefix = deriveFieldPrefix(typeName)
+	}
+
 	typeDef := &TypeDef{
 		Name:       typeName + "Passthrough",
 		SourceName: typeName,
@@ -121,8 +128,12 @@ func (g *Generator) createFieldDef(fieldName string, field *ast.Field) FieldDef 
 		}
 	}
 
-	// Get markers for this field
-	fieldDef.Markers = g.getMarkersForField(fieldName)
+	// Get markers for this field (use JSON tag name for registry lookup)
+	lookupName := fieldDef.JSONTag
+	if lookupName == "" {
+		lookupName = fieldName
+	}
+	fieldDef.Markers = g.getMarkersForField(lookupName)
 
 	return fieldDef
 }
@@ -184,23 +195,28 @@ func (g *Generator) isSourcePackageType(typeName string) bool {
 	return false
 }
 
-// getMarkersForField returns markers for a field, from registry or defaults
-func (g *Generator) getMarkersForField(fieldName string) []string {
-	// Check if we have existing markers in the registry
-	if meta, found := g.Registry[fieldName]; found {
+// getMarkersForField returns markers for a field, from registry or defaults.
+// jsonTagName is the JSON struct tag name (e.g., "autoNode"), which is combined
+// with g.FieldPrefix to build the registry lookup key (e.g., "spec.hostedCluster.autoNode").
+func (g *Generator) getMarkersForField(jsonTagName string) []string {
+	lookupKey := jsonTagName
+	if g.FieldPrefix != "" {
+		lookupKey = g.FieldPrefix + "." + jsonTagName
+	}
+
+	if meta, found := g.Registry[lookupKey]; found {
 		var markers []string
 
-		// Add visibility marker if hidden
 		if meta.Hidden {
 			markers = append(markers, "+k8s:openapi-gen=false")
+		} else {
+			markers = append(markers, "+k8s:openapi-gen=true")
 		}
 
-		// Add write mode marker
 		if meta.WriteMode != "" {
 			markers = append(markers, fmt.Sprintf("+hyperfleet:write-mode=%s", meta.WriteMode))
 		}
 
-		// Add feature gate marker
 		if meta.FeatureGate != "" {
 			markers = append(markers, fmt.Sprintf("+openshift:enable:FeatureGate=%s", meta.FeatureGate))
 		}
@@ -208,11 +224,23 @@ func (g *Generator) getMarkersForField(fieldName string) []string {
 		return markers
 	}
 
-	// Apply safe defaults for new fields
+	// Apply safe defaults for new fields not in the registry
 	return []string{
 		"+k8s:openapi-gen=false",
 		"+hyperfleet:write-mode=service-set",
 	}
+}
+
+// deriveFieldPrefix derives a registry field prefix from a Go type name.
+// e.g., "HostedClusterSpec" → "spec.hostedCluster", "NodePoolSpec" → "spec.nodePool"
+func deriveFieldPrefix(typeName string) string {
+	base := strings.TrimSuffix(typeName, "Spec")
+	if base == typeName {
+		return ""
+	}
+	runes := []rune(base)
+	runes[0] = unicode.ToLower(runes[0])
+	return "spec." + string(runes)
 }
 
 // parseStructTag extracts a specific tag value from struct tag string

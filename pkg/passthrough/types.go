@@ -26,6 +26,9 @@ type Generator struct {
 	// SourcePackageAlias is the alias to use for the source package import (e.g., "hypershiftv1")
 	SourcePackageAlias string
 
+	// FieldPrefix is the dotted path prefix for registry lookups (e.g., "spec.hostedCluster")
+	FieldPrefix string
+
 	// parsedFiles holds parsed AST of source files
 	parsedFiles map[string]*ast.File
 }

@@ -64,7 +64,11 @@ func LoadRegistryFromJSON(jsonFile string) (FieldRegistry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("reading JSON file: %w", err)
 	}
+	return LoadRegistryFromJSONBytes(data)
+}
 
+// LoadRegistryFromJSONBytes loads a field registry from raw JSON bytes
+func LoadRegistryFromJSONBytes(data []byte) (FieldRegistry, error) {
 	type jsonField struct {
 		FieldPath                  string                 `json:"fieldPath"`
 		WriteMode                  string                 `json:"writeMode,omitempty"`
