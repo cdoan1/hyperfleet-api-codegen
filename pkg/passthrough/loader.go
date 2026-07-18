@@ -128,8 +128,12 @@ func (g *Generator) createFieldDef(fieldName string, field *ast.Field) FieldDef 
 		}
 	}
 
-	// Get markers for this field (use JSON tag name for registry lookup)
+	// Get markers for this field (use JSON tag name for registry lookup,
+	// stripping options like ",omitempty" or ",omitzero")
 	lookupName := fieldDef.JSONTag
+	if i := strings.Index(lookupName, ","); i != -1 {
+		lookupName = lookupName[:i]
+	}
 	if lookupName == "" {
 		lookupName = fieldName
 	}
